@@ -93,25 +93,29 @@ export function Viewer3D() {
       renderer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      needsRender = true;
     };
+    let needsRender = true;
+    let lastFrame = -1;
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
 
     let raf = 0;
     const render = () => {
-      const { loaded, currentFrame } = usePlaybackStore.getState();
-      if (loaded) {
+      // On-demand rendering: only redraw when something actually changed, so the
+      // app goes idle when paused/finished instead of pinning a CPU core.
+      const { loaded, currentFrame, isPlaying } = usePlaybackStore.getState();
+      const moved = controls.update(); // returns true while the camera is moving
+      const frame = loaded ? clampFrame(currentFrame, loaded.metadata.num_frames) : -1;
+      if (loaded && (isPlaying || moved || needsRender || frame !== lastFrame)) {
         const { cartCol, angleCol } = readMapping();
-        const n = loaded.metadata.num_frames;
-        const idx = clampFrame(currentFrame, n);
-        const x = (loaded.columns[cartCol]?.[idx] as number) ?? 0;
-        const angle = (loaded.columns[angleCol]?.[idx] as number) ?? 0;
-        cart.position.x = x;
-        polePivot.rotation.z = -angle; // angle from vertical, tilt in x-y plane
+        cart.position.x = (loaded.columns[cartCol]?.[frame] as number) ?? 0;
+        polePivot.rotation.z = -((loaded.columns[angleCol]?.[frame] as number) ?? 0);
+        renderer.render(scene, camera);
+        lastFrame = frame;
+        needsRender = false;
       }
-      controls.update();
-      renderer.render(scene, camera);
       raf = requestAnimationFrame(render);
     };
     render();

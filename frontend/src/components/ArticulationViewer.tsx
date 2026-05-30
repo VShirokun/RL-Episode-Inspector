@@ -96,7 +96,10 @@ export function ArticulationViewer() {
       renderer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      needsRender = true;
     };
+    let needsRender = true;
+    let lastFrame = -1;
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
@@ -104,9 +107,13 @@ export function ArticulationViewer() {
     const tmp = new THREE.Vector3();
     let raf = 0;
     const render = () => {
-      const { loaded, currentFrame } = usePlaybackStore.getState();
-      if (loaded) {
-        const idx = clampFrame(currentFrame, loaded.metadata.num_frames);
+      // On-demand rendering (see Viewer3D): redraw only when something changed.
+      const { loaded, currentFrame, isPlaying } = usePlaybackStore.getState();
+      const moved = controls.update();
+      const idx = loaded ? clampFrame(currentFrame, loaded.metadata.num_frames) : -1;
+      if (loaded && (isPlaying || moved || needsRender || idx !== lastFrame)) {
+        lastFrame = idx;
+        needsRender = false;
         const num = (c: string) => (loaded.columns[c]?.[idx] as number) ?? 0;
         // position bodies
         bodies.forEach((b, i) => {
@@ -131,9 +138,8 @@ export function ArticulationViewer() {
           tmp.set(num(mk.pos[0]), num(mk.pos[1]), num(mk.pos[2]));
           markerMeshes[i].position.copy(tmp);
         });
+        renderer.render(scene, camera);
       }
-      controls.update();
-      renderer.render(scene, camera);
       raf = requestAnimationFrame(render);
     };
     render();

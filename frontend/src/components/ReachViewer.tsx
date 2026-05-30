@@ -106,7 +106,10 @@ export function ReachViewer() {
       renderer.setSize(w, h);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
+      needsRender = true;
     };
+    let needsRender = true;
+    let lastFrame = -1;
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
@@ -114,9 +117,13 @@ export function ReachViewer() {
     const cols = roleColumns();
     let raf = 0;
     const render = () => {
-      const { loaded, currentFrame } = usePlaybackStore.getState();
-      if (loaded) {
-        const idx = clampFrame(currentFrame, loaded.metadata.num_frames);
+      // On-demand rendering (see Viewer3D): redraw only when something changed.
+      const { loaded, currentFrame, isPlaying } = usePlaybackStore.getState();
+      const moved = controls.update();
+      const idx = loaded ? clampFrame(currentFrame, loaded.metadata.num_frames) : -1;
+      if (loaded && (isPlaying || moved || needsRender || idx !== lastFrame)) {
+        lastFrame = idx;
+        needsRender = false;
         const get = (c: string) => (loaded.columns[c]?.[idx] as number) ?? 0;
         const [ex, ey, ez] = toThree(get(cols.ex), get(cols.ey), get(cols.ez));
         const [tx, ty, tz] = toThree(get(cols.tx), get(cols.ty), get(cols.tz));
@@ -131,9 +138,8 @@ export function ReachViewer() {
         pos.setXYZ(0, ex, ey, ez);
         pos.setXYZ(1, tx, ty, tz);
         pos.needsUpdate = true;
+        renderer.render(scene, camera);
       }
-      controls.update();
-      renderer.render(scene, camera);
       raf = requestAnimationFrame(render);
     };
     render();
