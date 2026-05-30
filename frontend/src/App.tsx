@@ -6,6 +6,7 @@ import { ErrorState } from "./components/ErrorState";
 import { HelpModal } from "./components/HelpModal";
 import { LoadingState } from "./components/LoadingState";
 import { MetadataPanel } from "./components/MetadataPanel";
+import { ReachViewer } from "./components/ReachViewer";
 import { RewardCharts } from "./components/RewardCharts";
 import { TimelineControls } from "./components/TimelineControls";
 import { Viewer3D } from "./components/Viewer3D";
@@ -58,7 +59,7 @@ export default function App() {
               onRetry={selectedId ? () => usePlaybackStore.getState().selectEpisode(selectedId) : undefined}
             />
           ) : loaded ? (
-            <Viewer3D />
+            loaded.metadata.viewer.type === "reach3d" ? <ReachViewer /> : <Viewer3D />
           ) : (
             <div className="state empty">Select an episode to begin.</div>
           )}

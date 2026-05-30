@@ -77,6 +77,11 @@ def main() -> None:
     ee_ids, _ = robot.find_bodies("panda_hand")
     ee_i = ee_ids[0]
 
+    # The IK action's body_offset: the controlled point is 0.107 m down the
+    # panda_hand local z-axis (the fingertip), not panda_hand's own frame. We
+    # must measure/record that same point or the EE never "reaches" the target.
+    EE_OFFSET = np.array([0.0, 0.0, 0.107])
+
     def _to_numpy(x):
         if hasattr(x, "numpy") and "warp" in type(x).__module__:
             return x.numpy()
@@ -84,15 +89,22 @@ def main() -> None:
             return x.detach().cpu().numpy()
         return np.asarray(x)
 
+    def _rotate(quat_wxyz, v):
+        # rotate vector v by quaternion (w, x, y, z)
+        w, x, y, z = quat_wxyz
+        q = np.array([x, y, z])
+        return v + 2.0 * np.cross(q, np.cross(q, v) + w * v)
+
     def read_ee() -> tuple[tuple[float, float, float], tuple[float, float, float, float]]:
-        # EE pose in the env-local (base) frame; subtract the env origin.
+        # Controlled fingertip pose in the env-local (base) frame.
         pos_w = _to_numpy(robot.data.body_pos_w)[0, ee_i]
         quat_w = _to_numpy(robot.data.body_quat_w)[0, ee_i]  # (w, x, y, z)
         origin = _to_numpy(unwrapped.scene.env_origins)[0]
+        tip_w = pos_w + _rotate(quat_w, EE_OFFSET)
         pos = (
-            float(pos_w[0] - origin[0]),
-            float(pos_w[1] - origin[1]),
-            float(pos_w[2] - origin[2]),
+            float(tip_w[0] - origin[0]),
+            float(tip_w[1] - origin[1]),
+            float(tip_w[2] - origin[2]),
         )
         quat = tuple(float(v) for v in quat_w)
         return pos, quat  # type: ignore[return-value]
@@ -125,12 +137,17 @@ def main() -> None:
     rng = np.random.default_rng(args.seed)
     created: list[str] = []
 
+    # One fixed, known-reachable EE orientation (the default downward-ish pose),
+    # reused for every episode. Holding a consistent orientation keeps all
+    # workspace waypoints reachable; reading a fresh per-reset orientation made
+    # some episodes get stuck.
+    env.reset(seed=args.seed)
+    _, hold_quat = read_ee()
+
     for ep in range(args.num_episodes):
         env.reset(seed=args.seed + ep)
-        # let the arm settle and read a feasible EE orientation to hold
-        ee_pos, ee_quat = read_ee()
+        ee_pos, _ = read_ee()
         cmd = ee_pos
-        hold_quat = ee_quat
 
         skill = 0.4 + 0.6 * (ep + 0.5) / args.num_episodes
         move_gain = 0.06 + 0.24 * skill          # higher skill -> faster approach

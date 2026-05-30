@@ -20,7 +20,9 @@ DEFAULT_WAYPOINTS: list[tuple[float, float, float]] = [
     (0.60, 0.00, 0.45),
 ]
 
-REACH_THRESHOLD = 0.04  # meters; EE within this of a target counts as "reached"
+REACH_THRESHOLD = 0.07  # meters; EE within this of a target counts as "reached".
+# 7 cm tolerance accounts for differential-IK steady-state tracking error on this
+# arm; 4 cm is too tight and the EE never registers a reach.
 
 
 def distance(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
