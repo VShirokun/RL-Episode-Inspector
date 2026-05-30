@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  python:
+    name: Python (lint, types, tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Install package
+        run: uv venv .venv && uv pip install --python .venv -e ".[dev]"
+      - name: Ruff
+        run: .venv/bin/ruff check python tests
+      - name: Mypy
+        run: .venv/bin/mypy python/rl_episode_inspector
+      - name: Pytest (CI-safe only)
+        run: .venv/bin/python -m pytest -m "not isaaclab"
+
+  frontend:
+    name: Frontend (typecheck, unit, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm run test
+      - name: Build
+        run: npm run build
+
+  e2e:
+    name: E2E (Playwright, fake data)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+      - run: uv python install 3.12
+      - name: Install backend
+        run: uv venv .venv && uv pip install --python .venv -e ".[dev]"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install frontend
+        working-directory: frontend
+        run: npm ci
+      - name: Install Playwright browser
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Run E2E (boots backend + frontend via playwright webServer)
+        working-directory: frontend
+        env:
+          CI: "1"
+        run: npx playwright test

@@ -1,0 +1,8 @@
+# Recorder settings for the Cartpole demo rollout.
+task_name: Cartpole
+task: Isaac-Cartpole-Direct-v0
+viewer_type: cartpole
+env_id: 0           # MVP records a single environment index
+num_episodes: 12
+seed: 42
+max_steps: 2000     # safety cap per episode (episode normally ends < 300 steps)

@@ -1,0 +1,65 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "rl-episode-inspector"
+version = "0.1.0"
+description = "Interactive frame-by-frame analysis and 3D replay of RL episodes from Isaac Lab"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "RL Episode Inspector contributors" }]
+keywords = ["reinforcement-learning", "isaac-lab", "visualization", "debugging", "robotics"]
+dependencies = [
+    "numpy>=1.24",
+    "pyarrow>=14",
+    "pydantic>=2.5",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "typer>=0.9",
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+    "pytest-cov>=4.1",
+    "httpx>=0.27",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "types-PyYAML",
+]
+
+[project.scripts]
+rl-episode-inspector = "rl_episode_inspector.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/your-org/rl-episode-inspector"
+Documentation = "https://github.com/your-org/rl-episode-inspector/tree/main/docs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["python/rl_episode_inspector"]
+
+[tool.ruff]
+line-length = 100
+src = ["python", "tests"]
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "W", "C4"]
+ignore = ["B008"]  # typer uses function calls in argument defaults
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["python"]
+markers = [
+    "isaaclab: requires a local Isaac Lab + Isaac Sim install (skipped in standard CI)",
+]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.mypy]
+python_version = "3.10"
+mypy_path = "python"
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]

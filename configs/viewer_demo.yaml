@@ -1,0 +1,4 @@
+# Demo viewer/server configuration.
+episodes_dir: sample_data/cartpole/episodes
+host: 127.0.0.1
+port: 8000

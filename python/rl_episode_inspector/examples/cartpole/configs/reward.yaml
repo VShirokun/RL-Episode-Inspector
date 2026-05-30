@@ -1,0 +1,9 @@
+# Reward-term weights for the Cartpole demo. Raw terms are multiplied by these
+# to produce the *_weighted columns; reward_step_total is their sum.
+# (See python/rl_episode_inspector/examples/cartpole/reward.py)
+alive: 1.0
+pole_upright: 2.0
+cart_centering: 0.5
+cart_velocity_penalty: 0.05
+pole_angular_velocity_penalty: 0.05
+action_penalty: 0.01

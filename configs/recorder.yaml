@@ -1,0 +1,4 @@
+# Default recorder configuration (generic; task adapters may override).
+dt: 0.0166667        # 1/60 s control step
+env_id: 0
+max_saved_episodes: null
