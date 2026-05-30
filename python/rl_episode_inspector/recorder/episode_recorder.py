@@ -10,19 +10,30 @@ extracting those values from its environment.
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
 
 from ..storage import (
+    BodySpec,
     EpisodeMetadata,
     EpisodeStore,
+    MarkerSpec,
     SignalKind,
     SignalSpec,
     ViewerSpec,
 )
 from ..storage.schemas import utcnow_iso
 from .reward_buffer import RewardBuffer
+
+# Suffixes for the 7 flattened columns of a body pose (position + wxyz quaternion).
+_POSE_SUFFIXES = ("px", "py", "pz", "qw", "qx", "qy", "qz")
+
+
+def pose_columns(body: str) -> list[str]:
+    """The 7 frame-column names that store ``body``'s pose."""
+    return [f"pose_{body}_{s}" for s in _POSE_SUFFIXES]
 
 
 class RecorderError(RuntimeError):
@@ -56,6 +67,8 @@ class EpisodeRecorder:
         state_mapping: dict[str, str] | None = None,
         signal_units: dict[str, str] | None = None,
         signal_descriptions: dict[str, str] | None = None,
+        markers: list[MarkerSpec] | None = None,
+        up_axis: str = "z",
         max_saved_episodes: int | None = None,
     ) -> None:
         self.store = EpisodeStore(output_dir)
@@ -70,10 +83,38 @@ class EpisodeRecorder:
         self.state_mapping = dict(state_mapping or {})
         self.signal_units = dict(signal_units or {})
         self.signal_descriptions = dict(signal_descriptions or {})
+        self.markers = list(markers or [])
+        self.up_axis = up_axis
         self.max_saved_episodes = max_saved_episodes
+
+        # Articulation structure (persists across episodes once registered).
+        self._body_names: list[str] | None = None
+        self._body_specs: list[BodySpec] = []
+        self._pose_cols: dict[str, list[str]] = {}
 
         self._saved_count = 0
         self._reset_active_episode()
+
+    def register_bodies(self, names: list[str], parents: list[int]) -> None:
+        """Declare the articulation's rigid bodies (call before recording poses).
+
+        ``parents[i]`` is the index into ``names`` of body ``i``'s kinematic
+        parent (-1 for a root). Each body's pose is recorded via the ``poses``
+        argument of :meth:`record_frame` and rendered by the articulation viewer.
+        """
+        if len(names) != len(parents):
+            raise ValueError("names and parents must have the same length")
+        self._body_names = list(names)
+        self._pose_cols = {b: pose_columns(b) for b in names}
+        self._body_specs = [
+            BodySpec(
+                name=b,
+                parent=int(parents[i]),
+                pos=self._pose_cols[b][:3],
+                quat=self._pose_cols[b][3:],
+            )
+            for i, b in enumerate(names)
+        ]
 
     # -- lifecycle ---------------------------------------------------------
     def _reset_active_episode(self) -> None:
@@ -88,6 +129,7 @@ class EpisodeRecorder:
         self._truncated: list[bool] = []
         self._state: dict[str, list[float]] = {}
         self._action: dict[str, list[float]] = {}
+        self._poses: dict[str, list[float]] = {}  # pose column -> per-frame values
         self._state_keys: list[str] | None = None
         self._action_keys: list[str] | None = None
 
@@ -112,6 +154,7 @@ class EpisodeRecorder:
         reward_weights: dict[str, float],
         terminated: bool,
         truncated: bool,
+        poses: dict[str, Sequence[float]] | None = None,
     ) -> None:
         if not self._active:
             raise RecorderError("record_frame called before start_episode")
@@ -128,8 +171,30 @@ class EpisodeRecorder:
             self._state.setdefault(key, []).append(_finite(value, f"state[{key}]"))
         for key, value in action.items():
             self._action.setdefault(key, []).append(_finite(value, f"action[{key}]"))
+        self._record_poses(poses)
 
         self._rewards.add_frame(rewards_raw, reward_weights)
+
+    def _record_poses(self, poses: dict[str, Sequence[float]] | None) -> None:
+        if not poses:
+            if self._body_names:
+                raise RecorderError("bodies registered but no poses passed to record_frame")
+            return
+        if self._body_names is None:
+            raise RecorderError("call register_bodies(...) before recording poses")
+        if list(poses.keys()) != self._body_names:
+            raise RecorderError(
+                f"pose body set changed: expected {self._body_names}, got {list(poses)}"
+            )
+        for body in self._body_names:
+            values = poses[body]
+            if len(values) != 7:
+                raise RecorderError(
+                    f"pose for body {body!r} must be 7 numbers (px,py,pz,qw,qx,qy,qz), "
+                    f"got {len(values)}"
+                )
+            for col, value in zip(self._pose_cols[body], values, strict=True):
+                self._poses.setdefault(col, []).append(_finite(value, f"pose[{col}]"))
 
     def end_episode(
         self, global_step: int | None = None, reset_reason: str | None = None
@@ -177,7 +242,13 @@ class EpisodeRecorder:
             episode_return=float(self._rewards.cumulative_return),
             seed=self._seed,
             signals=signals,
-            viewer=ViewerSpec(type=self.viewer_type, state_mapping=self.state_mapping),
+            viewer=ViewerSpec(
+                type=self.viewer_type,
+                state_mapping=self.state_mapping,
+                bodies=self._body_specs,
+                markers=self.markers,
+                up_axis=self.up_axis,
+            ),
         )
 
         self.store.save_episode(metadata, columns)
@@ -213,6 +284,8 @@ class EpisodeRecorder:
             columns[key] = np.asarray(vals, dtype=np.float32)
         for name, vals in self._rewards.column_dict().items():
             columns[name] = np.asarray(vals, dtype=np.float32)
+        for name, vals in self._poses.items():
+            columns[name] = np.asarray(vals, dtype=np.float32)
         # Defensive: ensure all columns are the right length.
         for name, arr in columns.items():
             if len(arr) != n:
@@ -241,6 +314,8 @@ class EpisodeRecorder:
             signals.append(spec(f"reward_{name}_weighted", SignalKind.reward_weighted))
         signals.append(spec("reward_step_total", SignalKind.reward_total))
         signals.append(spec("reward_cumulative", SignalKind.reward_total))
+        for col in self._poses:
+            signals.append(spec(col, SignalKind.pose))
         return signals
 
     @property

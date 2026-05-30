@@ -23,6 +23,7 @@ class SignalKind(str, Enum):
     reward_total = "reward_total"
     action = "action"
     observation = "observation"
+    pose = "pose"  # a component of a rigid body's 3D pose (position or quaternion)
     debug = "debug"
     event = "event"
 
@@ -43,13 +44,42 @@ class SignalSpec(BaseModel):
     model_config = {"use_enum_values": True}
 
 
+class BodySpec(BaseModel):
+    """One rigid body of an articulation, for the articulation viewer.
+
+    ``pos``/``quat`` name the frame columns holding this body's pose (a position
+    triple and a wxyz quaternion). ``parent`` indexes another body in the same
+    list (-1 = root) so the viewer can draw a "bone" to the parent. This is
+    generic over any robot: Franka now, a humanoid later.
+    """
+
+    name: str
+    parent: int = -1
+    pos: list[str]  # [px_col, py_col, pz_col]
+    quat: list[str]  # [qw_col, qx_col, qy_col, qz_col]
+
+
+class MarkerSpec(BaseModel):
+    """A point marker to render (e.g. a reach target). ``pos`` names 3 columns."""
+
+    name: str
+    pos: list[str]
+    color: str | None = None
+
+
 class ViewerSpec(BaseModel):
     """Tells the frontend which 3D viewer to use and how to feed it state.
 
     ``state_mapping`` maps a viewer-internal role (e.g. ``"cart_position"``) to
-    the name of a recorded signal. The Cartpole viewer is the only one shipped
-    in the MVP, but the indirection keeps the core viewer-agnostic.
+    the name of a recorded signal (used by the simple cartpole/reach viewers).
+    For full-robot replay, ``bodies`` describes the articulation (one entry per
+    rigid body, each pointing at its pose columns) and ``markers`` adds point
+    markers; the generic ``articulation3d`` viewer renders these. ``up_axis``
+    tells the viewer which axis is "up" in the recorded poses ("z" for Isaac).
     """
 
     type: str = "generic"
     state_mapping: dict[str, str] = Field(default_factory=dict)
+    bodies: list[BodySpec] = Field(default_factory=list)
+    markers: list[MarkerSpec] = Field(default_factory=list)
+    up_axis: str = "z"

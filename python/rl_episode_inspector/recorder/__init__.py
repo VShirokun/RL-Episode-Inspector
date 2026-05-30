@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from .episode_recorder import EpisodeRecorder, RecorderError
+from .episode_recorder import EpisodeRecorder, RecorderError, pose_columns
 from .reward_buffer import RewardBuffer
 
-__all__ = ["EpisodeRecorder", "RecorderError", "RewardBuffer"]
+__all__ = ["EpisodeRecorder", "RecorderError", "RewardBuffer", "pose_columns"]
