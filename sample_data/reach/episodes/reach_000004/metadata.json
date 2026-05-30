@@ -1,0 +1,233 @@
+{
+  "schema_version": "0.1.0",
+  "episode_id": "reach_000004",
+  "run_id": "isaaclab_reach_seed42",
+  "task_name": "FrankaReach",
+  "task_source": "isaac_lab",
+  "env_id": 0,
+  "episode_index": 4,
+  "created_at": "2026-05-30T15:16:53Z",
+  "num_frames": 750,
+  "dt": 0.03333333333333333,
+  "fps": 30.0,
+  "duration_seconds": 25.0,
+  "global_step_start": 2250,
+  "global_step_end": 2999,
+  "terminated": false,
+  "truncated": true,
+  "reset_reason": "time_limit",
+  "episode_return": -177.86472908719432,
+  "policy_checkpoint": null,
+  "seed": 45,
+  "signals": [
+    {
+      "name": "ee_x",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": "End-effector x (base frame)",
+      "display": null
+    },
+    {
+      "name": "ee_y",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "ee_z",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "target_x",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "target_y",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "target_z",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "distance_to_target",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": "Distance from EE to the current target",
+      "display": null
+    },
+    {
+      "name": "targets_reached",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": "Cumulative number of targets reached",
+      "display": null
+    },
+    {
+      "name": "cmd_x",
+      "kind": "action",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "cmd_y",
+      "kind": "action",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "cmd_z",
+      "kind": "action",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "ee_speed",
+      "kind": "action",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m/s",
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_reach_progress_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_reach_progress_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_action_smoothness_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_action_smoothness_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_time_penalty_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_time_penalty_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_target_reached_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_target_reached_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_step_total",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_cumulative",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    }
+  ],
+  "viewer": {
+    "type": "reach3d",
+    "state_mapping": {
+      "ee_x": "ee_x",
+      "ee_y": "ee_y",
+      "ee_z": "ee_z",
+      "target_x": "target_x",
+      "target_y": "target_y",
+      "target_z": "target_z"
+    }
+  }
+}

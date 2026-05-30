@@ -50,6 +50,10 @@ generate-reach-demo: ## Generate REAL Isaac Lab Franka Reach episodes (sparse re
 backend-dev: ## Run the backend API on :8000
 	$(RLEI) serve --episodes-dir $(EPISODES_DIR) --host 127.0.0.1 --port 8000
 
+.PHONY: serve-reach
+serve-reach: ## Serve the committed Franka Reach demo episodes (no Isaac needed)
+	$(RLEI) serve --episodes-dir sample_data/reach/episodes --host 127.0.0.1 --port 8000
+
 .PHONY: frontend-install
 frontend-install: ## Install frontend deps
 	cd frontend && npm install
