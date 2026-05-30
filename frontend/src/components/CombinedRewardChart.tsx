@@ -19,10 +19,15 @@ export function CombinedRewardChart() {
     return ["reward_step_total", ...weightedRewardNames(loaded)];
   }, [loaded]);
 
-  if (!loaded) return null;
+  // Memoize series so their array refs are stable across per-frame re-renders
+  // (lets TimeSeriesChart keep its memoized paths instead of rebuilding them).
+  const allSeries = useMemo(() => (loaded ? buildSeries(loaded, names) : []), [loaded, names]);
+  const visible = useMemo(
+    () => allSeries.filter((s) => !hidden.has(s.name)),
+    [allSeries, hidden],
+  );
 
-  const allSeries = buildSeries(loaded, names);
-  const visible = allSeries.filter((s) => !hidden.has(s.name));
+  if (!loaded) return null;
 
   const toggle = (name: string) =>
     setHidden((prev) => {

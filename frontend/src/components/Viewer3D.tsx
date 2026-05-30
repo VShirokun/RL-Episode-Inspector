@@ -35,7 +35,8 @@ export function Viewer3D() {
     const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100);
     camera.position.set(2.5, 2.0, 4.5);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // antialias off keeps software WebGL (llvmpipe/SwiftShader) cheap.
+    const renderer = new THREE.WebGLRenderer({ antialias: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mount.appendChild(renderer.domElement);
 

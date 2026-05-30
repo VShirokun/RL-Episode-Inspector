@@ -6,7 +6,7 @@
 // adapting a charting lib's interaction model, and keeps the bundle tiny. The
 // pixel<->frame math lives in frameSync.ts and is unit-tested.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { frameToX, seriesExtent, xToFrame } from "../playback/frameSync";
 
 export interface Series {
@@ -55,14 +55,28 @@ export function TimeSeriesChart({
   const [ref, width] = useMeasuredWidth();
   const dragging = useRef(false);
 
-  const all = series.flatMap((s) => s.values);
-  const { min, max } = seriesExtent(all);
-
-  const yOf = (v: number) => {
-    const t = (v - min) / (max - min || 1);
-    return PAD.top + (1 - t) * (height - PAD.top - PAD.bottom);
-  };
-  const xOf = (frame: number) => frameToX(frame, numFrames, width, PAD.left, PAD.right);
+  // Static geometry (series paths, y-extent, zero line) depends only on the data
+  // and the size — memoize it so the per-frame re-renders that move the marker
+  // don't rebuild every polyline (that rebuild, ~750 pts x N series x 60 fps, was
+  // saturating the main thread during playback).
+  const { min, max, paths, zeroY } = useMemo(() => {
+    const all = series.flatMap((s) => s.values);
+    const ext = seriesExtent(all);
+    const yOf = (v: number) =>
+      PAD.top + (1 - (v - ext.min) / (ext.max - ext.min || 1)) * (height - PAD.top - PAD.bottom);
+    const xOf = (frame: number) => frameToX(frame, numFrames, width, PAD.left, PAD.right);
+    const paths = series.map((s) => {
+      let d = "";
+      for (let i = 0; i < s.values.length; i++) {
+        const v = s.values[i];
+        if (!Number.isFinite(v)) continue;
+        d += `${d ? "L" : "M"}${xOf(i).toFixed(1)} ${yOf(v).toFixed(1)} `;
+      }
+      return { name: s.name, color: s.color, d };
+    });
+    const zeroY = ext.min < 0 && ext.max > 0 ? yOf(0) : null;
+    return { min: ext.min, max: ext.max, paths, zeroY };
+  }, [series, width, height, numFrames]);
 
   const seekFromEvent = useCallback(
     (clientX: number, el: SVGSVGElement) => {
@@ -90,18 +104,7 @@ export function TimeSeriesChart({
   };
 
   const frame = Math.round(currentFrame);
-  const markerX = xOf(frame);
-
-  const pathFor = (values: number[]) => {
-    if (values.length === 0 || width <= 0) return "";
-    let d = "";
-    for (let i = 0; i < values.length; i++) {
-      const v = values[i];
-      if (!Number.isFinite(v)) continue;
-      d += `${d ? "L" : "M"}${xOf(i).toFixed(1)} ${yOf(v).toFixed(1)} `;
-    }
-    return d;
-  };
+  const markerX = frameToX(frame, numFrames, width, PAD.left, PAD.right);
 
   return (
     <div className="chart" ref={ref}>
@@ -126,18 +129,18 @@ export function TimeSeriesChart({
           {min.toFixed(2)}
         </text>
         {/* zero line if range straddles zero */}
-        {min < 0 && max > 0 && (
+        {zeroY !== null && (
           <line
             x1={PAD.left}
             x2={width - PAD.right}
-            y1={yOf(0)}
-            y2={yOf(0)}
+            y1={zeroY}
+            y2={zeroY}
             className="zero-line"
           />
         )}
-        {/* series */}
-        {series.map((s) => (
-          <path key={s.name} d={pathFor(s.values)} fill="none" stroke={s.color} strokeWidth={1.5} />
+        {/* series (memoized paths) */}
+        {paths.map((s) => (
+          <path key={s.name} d={s.d} fill="none" stroke={s.color} strokeWidth={1.5} />
         ))}
         {/* current-frame marker */}
         <line

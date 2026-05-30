@@ -35,8 +35,12 @@ export function ArticulationViewer() {
     scene.background = new THREE.Color(0x10131a);
     const camera = new THREE.PerspectiveCamera(50, 1, 0.01, 100);
     camera.position.set(1.4, 1.0, 1.4);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // antialias off + capped pixel ratio: MSAA and extra pixels are very
+    // expensive under software WebGL (llvmpipe/SwiftShader), which is what
+    // rasterizes the detailed robot meshes on the CPU main thread. This keeps
+    // input responsive even with the full meshes.
+    const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
     mount.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -123,12 +127,16 @@ export function ArticulationViewer() {
     ro.observe(mount);
 
     const tmp = new THREE.Vector3();
+    const MIN_DRAW_MS = 1000 / 40; // cap GL draws at ~40 fps (eases software GL)
+    let lastDraw = 0;
     let raf = 0;
-    const render = () => {
+    const render = (now: number) => {
       const { loaded, currentFrame, isPlaying } = usePlaybackStore.getState();
       const moved = controls.update();
       const idx = loaded ? clampFrame(currentFrame, loaded.metadata.num_frames) : -1;
-      if (loaded && (isPlaying || moved || needsRender || idx !== lastFrame)) {
+      const due = now - lastDraw >= MIN_DRAW_MS;
+      if (loaded && due && (isPlaying || moved || needsRender || idx !== lastFrame)) {
+        lastDraw = now;
         lastFrame = idx;
         needsRender = false;
         const num = (c: string) => (loaded.columns[c]?.[idx] as number) ?? 0;
@@ -156,7 +164,7 @@ export function ArticulationViewer() {
       }
       raf = requestAnimationFrame(render);
     };
-    render();
+    raf = requestAnimationFrame(render);
 
     return () => {
       cancelAnimationFrame(raf);

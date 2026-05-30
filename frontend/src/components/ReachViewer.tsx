@@ -46,7 +46,8 @@ export function ReachViewer() {
     const camera = new THREE.PerspectiveCamera(50, 1, 0.01, 100);
     camera.position.set(1.2, 0.9, 1.2);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    // antialias off keeps software WebGL (llvmpipe/SwiftShader) cheap.
+    const renderer = new THREE.WebGLRenderer({ antialias: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mount.appendChild(renderer.domElement);
 
