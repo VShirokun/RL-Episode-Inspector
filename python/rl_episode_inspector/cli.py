@@ -74,6 +74,9 @@ def serve(
     episodes_dir: Path = typer.Option(
         Path("sample_data/cartpole/episodes"), "--episodes-dir", "-d"
     ),
+    assets_dir: Path | None = typer.Option(
+        None, "--assets-dir", help="robot mesh GLBs served at /assets"
+    ),
     host: str = typer.Option("127.0.0.1", "--host"),
     port: int = typer.Option(8000, "--port"),
 ) -> None:
@@ -82,7 +85,7 @@ def serve(
 
     from .server import create_app
 
-    server_app = create_app(episodes_dir)
+    server_app = create_app(episodes_dir, assets_dir=assets_dir)
     typer.echo(f"Serving episodes from {episodes_dir} at http://{host}:{port}")
     uvicorn.run(server_app, host=host, port=port)
 

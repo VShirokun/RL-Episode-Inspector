@@ -17,6 +17,7 @@ exact frame where something interesting happened.
 ## Key features
 
 - 🎬 **3D replay** of recorded episodes in the browser (Three.js), no Isaac Sim required to view.
+- 🤖 **Full-robot replay** — every rigid body's pose is recorded; the viewer shows the whole robot as **real 3D meshes** (default) or lightweight **cubes** (toggle, for when you don't want to ship/store meshes).
 - 📊 **Reward decomposition** — every reward term recorded raw *and* weighted, per frame.
 - 🏆 **Ranking** — select best / worst / median episode by `episode_return`.
 - 🔗 **Synchronized timeline** — one source of truth; click/drag charts to scrub, keyboard shortcuts.

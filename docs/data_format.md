@@ -93,8 +93,18 @@ clutter the reward/value UI panels). The articulation **structure** lives in
 `parent` indexes another body in `bodies` (-1 = root) so the viewer can draw
 bones. `up_axis` tells the viewer which axis is up in the recorded poses (`"z"`
 for Isaac). This is generic over any robot — Franka today, a humanoid later (just
-more bodies). The recorder produces it via `register_bodies(names, parents)` +
-`record_frame(poses={body: (px,py,pz,qw,qx,qy,qz)})`.
+more bodies). The recorder produces it via `register_bodies(names, parents,
+meshes)` + `record_frame(poses={body: (px,py,pz,qw,qx,qy,qz)})`.
+
+### Meshes (real 3D models vs cubes)
+
+Each body may also carry `"mesh"`: a GLB path **relative to the assets dir** the
+backend serves at `GET /api/assets/<path>` (e.g. `"franka/panda_link0.glb"`). The
+viewer's **"models"** mode (default) loads these and renders the real robot; the
+**"cubes"** mode (or a missing/failed mesh) draws lightweight proxy boxes — so
+users low on space can skip shipping meshes. Meshes are exported once per robot
+from USD with `examples/export_robot_meshes.py` and live under
+`<episodes_dir>/../assets` (overridable via `--assets-dir` / `RLEI_ASSETS_DIR`).
 
 ## Reward naming convention
 

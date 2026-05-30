@@ -95,15 +95,24 @@ class EpisodeRecorder:
         self._saved_count = 0
         self._reset_active_episode()
 
-    def register_bodies(self, names: list[str], parents: list[int]) -> None:
+    def register_bodies(
+        self,
+        names: list[str],
+        parents: list[int],
+        meshes: Sequence[str | None] | None = None,
+    ) -> None:
         """Declare the articulation's rigid bodies (call before recording poses).
 
         ``parents[i]`` is the index into ``names`` of body ``i``'s kinematic
-        parent (-1 for a root). Each body's pose is recorded via the ``poses``
-        argument of :meth:`record_frame` and rendered by the articulation viewer.
+        parent (-1 for a root). Optional ``meshes[i]`` is a GLB path (relative to
+        the backend's assets dir) used by the viewer's "models" mode; bodies
+        without a mesh (or in "cubes" mode) render as proxy boxes. Each body's
+        pose is recorded via the ``poses`` argument of :meth:`record_frame`.
         """
         if len(names) != len(parents):
             raise ValueError("names and parents must have the same length")
+        if meshes is not None and len(meshes) != len(names):
+            raise ValueError("meshes must have the same length as names")
         self._body_names = list(names)
         self._pose_cols = {b: pose_columns(b) for b in names}
         self._body_specs = [
@@ -112,6 +121,7 @@ class EpisodeRecorder:
                 parent=int(parents[i]),
                 pos=self._pose_cols[b][:3],
                 quat=self._pose_cols[b][3:],
+                mesh=(meshes[i] if meshes is not None else None),
             )
             for i, b in enumerate(names)
         ]

@@ -25,6 +25,7 @@ export interface BodySpec {
   parent: number; // index into bodies[], -1 = root
   pos: [string, string, string]; // px,py,pz column names
   quat: [string, string, string, string]; // qw,qx,qy,qz column names
+  mesh?: string | null; // GLB path under /assets (models mode); null => cube
 }
 
 export interface MarkerSpec {

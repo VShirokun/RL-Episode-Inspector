@@ -112,6 +112,25 @@ A task adapter calls `recorder.register_bodies(names, parents)` once and passes
 a humanoid later). The Newton backend exposes body state as warp arrays (handled
 by `to_numpy`).
 
+### Real meshes (models vs cubes)
+
+The viewer can render the **real robot meshes** (default) or lightweight cubes.
+Export per-body GLBs once from the robot's USD (standalone — no sim app needed):
+
+```bash
+isaaclab-env/bin/python -m rl_episode_inspector.examples.export_robot_meshes \
+  --usd-dir <ISAAC_ASSETS>/Robots/FrankaEmika/Props \
+  --bodies panda_link0,panda_link1,panda_link2,panda_link3,panda_link4,panda_link5,panda_link6,panda_link7,panda_hand,panda_leftfinger,panda_rightfinger \
+  --out-dir sample_data/reach/assets/franka
+```
+
+Then pass the mesh paths to the recorder: `register_bodies(names, parents,
+meshes=[f"franka/{n}.glb" for n in names])`. The backend serves them at
+`/api/assets/...`; the frontend "Models/Cubes" toggle switches modes, and any
+body without a mesh falls back to a cube. The exporter bakes each link's visual
+mesh into the link-local frame, so placing it at the recorded body pose
+reconstructs the robot.
+
 Gotchas specific to this task (learned during implementation):
 - The IK `body_offset` means the *controlled* point is the fingertip
   (`panda_hand` + 0.107 m along local z), not `panda_hand` — measure/record that

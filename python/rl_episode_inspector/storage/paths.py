@@ -25,6 +25,22 @@ def is_valid_episode_id(episode_id: str) -> bool:
     return bool(_EPISODE_ID_RE.match(episode_id)) and ".." not in episode_id
 
 
+def safe_subpath(root: str | Path, relpath: str) -> Path:
+    """Resolve ``root/relpath`` (which MAY contain subdirs) safely.
+
+    Allows nested paths like ``franka/panda_link0.glb`` but rejects absolute
+    paths, ``..`` traversal, and anything that resolves outside ``root``. Used to
+    serve mesh assets.
+    """
+    if not relpath or relpath.startswith("/") or ".." in relpath.split("/"):
+        raise UnsafeEpisodeIdError(f"Unsafe asset path: {relpath!r}")
+    root_resolved = Path(root).resolve()
+    candidate = (root_resolved / relpath).resolve()
+    if root_resolved != candidate and root_resolved not in candidate.parents:
+        raise UnsafeEpisodeIdError(f"Asset path escapes the assets directory: {relpath!r}")
+    return candidate
+
+
 def safe_episode_dir(root: str | Path, episode_id: str) -> Path:
     """Return ``root/episode_id`` only if it is well-formed and stays inside root."""
     if not is_valid_episode_id(episode_id):

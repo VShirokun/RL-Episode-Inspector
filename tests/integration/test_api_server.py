@@ -97,3 +97,19 @@ def test_path_traversal_rejected(client):
 def test_empty_directory(empty_client):
     assert empty_client.get("/api/episodes").json()["episodes"] == []
     assert empty_client.get("/api/ranking?mode=best").status_code == 404
+
+
+def test_assets_serving_and_traversal(tmp_path):
+    # assets dir with a nested file
+    episodes = tmp_path / "episodes"
+    generate_fake_cartpole_episodes(episodes, num_episodes=1, seed=1, max_frames=10)
+    assets = tmp_path / "assets"
+    (assets / "robot").mkdir(parents=True)
+    (assets / "robot" / "link0.glb").write_bytes(b"GLBDATA")
+    client = TestClient(create_app(episodes, assets_dir=assets))
+
+    ok = client.get("/api/assets/robot/link0.glb")
+    assert ok.status_code == 200 and ok.content == b"GLBDATA"
+    assert client.get("/api/assets/robot/missing.glb").status_code == 404
+    # path traversal must not escape the assets dir
+    assert client.get("/api/assets/..%2f..%2fsecret").status_code in (400, 404)

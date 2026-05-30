@@ -143,7 +143,10 @@ def main() -> None:
             "targets_reached": "Cumulative number of targets reached",
         },
     )
-    recorder.register_bodies(body_names, body_parents)
+    # Per-body GLB meshes exported by export_robot_meshes.py (served at
+    # /assets/franka/<body>.glb). The viewer falls back to cubes if absent.
+    body_meshes = [f"franka/{name}.glb" for name in body_names]
+    recorder.register_bodies(body_names, body_parents, meshes=body_meshes)
 
     rng = np.random.default_rng(args.seed)
     created: list[str] = []

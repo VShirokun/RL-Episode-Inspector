@@ -27,6 +27,7 @@ interface PlaybackState {
   isPlaying: boolean;
   speed: PlaybackSpeed;
   loop: boolean; // when true, playback restarts at frame 0 instead of stopping
+  renderMode: "models" | "cubes"; // 3D bodies: real meshes (default) or proxy cubes
 
   // derived
   numFrames: () => number;
@@ -45,6 +46,7 @@ interface PlaybackState {
   last: () => void;
   setSpeed: (speed: PlaybackSpeed) => void;
   toggleLoop: () => void;
+  setRenderMode: (mode: "models" | "cubes") => void;
   tick: (elapsedSeconds: number) => void;
 }
 
@@ -67,6 +69,7 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => ({
   isPlaying: false,
   speed: 1,
   loop: true,
+  renderMode: "models",
 
   numFrames: () => get().loaded?.metadata.num_frames ?? 0,
 
@@ -138,6 +141,8 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => ({
   setSpeed: (speed) => set({ speed }),
 
   toggleLoop: () => set({ loop: !get().loop }),
+
+  setRenderMode: (mode) => set({ renderMode: mode }),
 
   tick: (elapsedSeconds) => {
     const { isPlaying, loaded, currentFrame, speed, loop } = get();

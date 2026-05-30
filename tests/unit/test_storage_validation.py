@@ -84,3 +84,14 @@ def test_path_traversal_rejected(tmp_path):
 def test_store_exists_false_for_bad_id(tmp_path):
     store = EpisodeStore(tmp_path)
     assert store.exists("../escape") is False
+
+
+def test_safe_subpath_allows_nesting_blocks_traversal(tmp_path):
+    from rl_episode_inspector.storage.paths import safe_subpath
+
+    # nested asset path is allowed and stays inside root
+    p = safe_subpath(tmp_path, "franka/panda_link0.glb")
+    assert str(p).startswith(str(tmp_path.resolve()))
+    for bad in ["../x", "a/../../b", "/etc/passwd", "", "franka/../../escape"]:
+        with pytest.raises(UnsafeEpisodeIdError):
+            safe_subpath(tmp_path, bad)

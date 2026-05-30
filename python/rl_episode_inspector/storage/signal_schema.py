@@ -57,6 +57,10 @@ class BodySpec(BaseModel):
     parent: int = -1
     pos: list[str]  # [px_col, py_col, pz_col]
     quat: list[str]  # [qw_col, qx_col, qy_col, qz_col]
+    # Optional path to this body's 3D mesh (GLB), relative to the assets dir the
+    # backend serves at /assets. When absent (or in "cubes" render mode) the
+    # viewer draws a proxy box instead.
+    mesh: str | None = None
 
 
 class MarkerSpec(BaseModel):

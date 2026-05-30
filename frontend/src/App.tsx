@@ -25,7 +25,10 @@ export default function App() {
   const episodeError = usePlaybackStore((s) => s.episodeError);
   const loaded = usePlaybackStore((s) => s.loaded);
   const selectedId = usePlaybackStore((s) => s.selectedId);
+  const renderMode = usePlaybackStore((s) => s.renderMode);
+  const setRenderMode = usePlaybackStore((s) => s.setRenderMode);
   const [helpOpen, setHelpOpen] = useState(false);
+  const hasBodies = (loaded?.metadata.viewer.bodies?.length ?? 0) > 0;
 
   useEffect(() => {
     fetchEpisodes();
@@ -38,6 +41,24 @@ export default function App() {
           <span className="logo">◉</span> RL Episode Inspector
         </div>
         <MetadataPanel />
+        {hasBodies && (
+          <div className="render-mode" role="group" aria-label="3D render mode" title="Real meshes vs lightweight cubes">
+            <button
+              className={`button seg ${renderMode === "models" ? "active" : ""}`}
+              onClick={() => setRenderMode("models")}
+              data-testid="render-models"
+            >
+              Models
+            </button>
+            <button
+              className={`button seg ${renderMode === "cubes" ? "active" : ""}`}
+              onClick={() => setRenderMode("cubes")}
+              data-testid="render-cubes"
+            >
+              Cubes
+            </button>
+          </div>
+        )}
         <button className="button ghost" onClick={() => setHelpOpen(true)}>
           ? Help
         </button>
