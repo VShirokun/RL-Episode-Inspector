@@ -10,7 +10,7 @@ extracting those values from its environment.
 from __future__ import annotations
 
 import math
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 import numpy as np
@@ -154,7 +154,7 @@ class EpisodeRecorder:
         reward_weights: dict[str, float],
         terminated: bool,
         truncated: bool,
-        poses: dict[str, Sequence[float]] | None = None,
+        poses: Mapping[str, Sequence[float]] | None = None,
     ) -> None:
         if not self._active:
             raise RecorderError("record_frame called before start_episode")
@@ -175,7 +175,7 @@ class EpisodeRecorder:
 
         self._rewards.add_frame(rewards_raw, reward_weights)
 
-    def _record_poses(self, poses: dict[str, Sequence[float]] | None) -> None:
+    def _record_poses(self, poses: Mapping[str, Sequence[float]] | None) -> None:
         if not poses:
             if self._body_names:
                 raise RecorderError("bodies registered but no poses passed to record_frame")

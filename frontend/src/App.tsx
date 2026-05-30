@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ArticulationViewer } from "./components/ArticulationViewer";
 import { CombinedRewardChart } from "./components/CombinedRewardChart";
 import { CurrentValuesPanel } from "./components/CurrentValuesPanel";
 import { EpisodeSelector } from "./components/EpisodeSelector";
@@ -59,7 +60,13 @@ export default function App() {
               onRetry={selectedId ? () => usePlaybackStore.getState().selectEpisode(selectedId) : undefined}
             />
           ) : loaded ? (
-            loaded.metadata.viewer.type === "reach3d" ? <ReachViewer /> : <Viewer3D />
+            loaded.metadata.viewer.type === "articulation3d" ? (
+              <ArticulationViewer />
+            ) : loaded.metadata.viewer.type === "reach3d" ? (
+              <ReachViewer />
+            ) : (
+              <Viewer3D />
+            )
           ) : (
             <div className="state empty">Select an episode to begin.</div>
           )}

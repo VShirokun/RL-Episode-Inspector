@@ -50,6 +50,11 @@ def main() -> None:
     import torch
     from isaaclab_tasks.utils import parse_env_cfg
 
+    from rl_episode_inspector.examples.isaaclab_poses import (
+        body_structure,
+        read_body_poses,
+        to_numpy,
+    )
     from rl_episode_inspector.examples.reach.reward import compute_reward_terms, load_reward_weights
     from rl_episode_inspector.examples.reach.targets import (
         DEFAULT_WAYPOINTS,
@@ -59,6 +64,7 @@ def main() -> None:
         distance,
     )
     from rl_episode_inspector.recorder import EpisodeRecorder
+    from rl_episode_inspector.storage import MarkerSpec
 
     weights = load_reward_weights(args.reward_config)
 
@@ -81,13 +87,10 @@ def main() -> None:
     # panda_hand local z-axis (the fingertip), not panda_hand's own frame. We
     # must measure/record that same point or the EE never "reaches" the target.
     EE_OFFSET = np.array([0.0, 0.0, 0.107])
+    env_origin = to_numpy(unwrapped.scene.env_origins)[0]
 
-    def _to_numpy(x):
-        if hasattr(x, "numpy") and "warp" in type(x).__module__:
-            return x.numpy()
-        if hasattr(x, "detach"):
-            return x.detach().cpu().numpy()
-        return np.asarray(x)
+    # Auto-capture structure for ALL of the robot's rigid bodies.
+    body_names, body_parents = body_structure(robot)
 
     def _rotate(quat_wxyz, v):
         # rotate vector v by quaternion (w, x, y, z)
@@ -97,10 +100,10 @@ def main() -> None:
 
     def read_ee() -> tuple[tuple[float, float, float], tuple[float, float, float, float]]:
         # Controlled fingertip pose in the env-local (base) frame.
-        pos_w = _to_numpy(robot.data.body_pos_w)[0, ee_i]
-        quat_w = _to_numpy(robot.data.body_quat_w)[0, ee_i]  # (w, x, y, z)
-        origin = _to_numpy(unwrapped.scene.env_origins)[0]
+        pos_w = to_numpy(robot.data.body_pos_w)[0, ee_i]
+        quat_w = to_numpy(robot.data.body_quat_w)[0, ee_i]  # (w, x, y, z)
         tip_w = pos_w + _rotate(quat_w, EE_OFFSET)
+        origin = env_origin
         pos = (
             float(tip_w[0] - origin[0]),
             float(tip_w[1] - origin[1]),
@@ -117,11 +120,18 @@ def main() -> None:
         run_id=f"isaaclab_reach_seed{args.seed}",
         task_source="isaac_lab",
         episode_id_prefix="reach",
-        viewer_type="reach3d",
+        viewer_type="articulation3d",  # full robot, not just the EE
         state_mapping={
             "ee_x": "ee_x", "ee_y": "ee_y", "ee_z": "ee_z",
             "target_x": "target_x", "target_y": "target_y", "target_z": "target_z",
         },
+        # Render the current target as a point marker alongside the robot bodies.
+        markers=[
+            MarkerSpec(
+                name="target", pos=["target_x", "target_y", "target_z"], color="#4ecb71"
+            )
+        ],
+        up_axis="z",  # Isaac world frame is z-up
         signal_units={
             "ee_x": "m", "ee_y": "m", "ee_z": "m",
             "target_x": "m", "target_y": "m", "target_z": "m",
@@ -133,6 +143,7 @@ def main() -> None:
             "targets_reached": "Cumulative number of targets reached",
         },
     )
+    recorder.register_bodies(body_names, body_parents)
 
     rng = np.random.default_rng(args.seed)
     created: list[str] = []
@@ -197,6 +208,7 @@ def main() -> None:
                 reward_weights=weights,
                 terminated=terminated,
                 truncated=truncated,
+                poses=read_body_poses(robot, env_origin),  # all robot bodies
             )
             if terminated or truncated:
                 break

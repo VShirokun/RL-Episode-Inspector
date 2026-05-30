@@ -20,7 +20,23 @@ export interface SignalSpec {
   display?: Record<string, unknown> | null;
 }
 
+export interface BodySpec {
+  name: string;
+  parent: number; // index into bodies[], -1 = root
+  pos: [string, string, string]; // px,py,pz column names
+  quat: [string, string, string, string]; // qw,qx,qy,qz column names
+}
+
+export interface MarkerSpec {
+  name: string;
+  pos: [string, string, string];
+  color: string | null;
+}
+
 export interface ViewerSpec {
   type: string;
   state_mapping: Record<string, string>;
+  bodies?: BodySpec[];
+  markers?: MarkerSpec[];
+  up_axis?: "z" | "y";
 }
