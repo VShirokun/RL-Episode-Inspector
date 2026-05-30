@@ -82,6 +82,9 @@ first task adapter.
 
 - **New task** → add an adapter under `examples/<task>/` that calls
   `EpisodeRecorder.record_frame`; set `viewer.type` + `state_mapping`.
-- **New viewer** → add a component keyed on `metadata.viewer.type`.
+- **New viewer** → add a component keyed on `metadata.viewer.type`. For full
+  robots use the generic `articulation3d` viewer: record every body's pose with
+  `EpisodeRecorder.register_bodies` + `record_frame(poses=...)` (see
+  `examples/isaaclab_poses.py`) — no new frontend code needed for a new robot.
 - **New chart** → build `Series[]` from columns and render with `TimeSeriesChart`.
 - **Richer ranking** → add methods to `EpisodeRanker` over the same summary table.

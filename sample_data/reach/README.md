@@ -17,6 +17,9 @@ episodes/
   reached → `terminated`/`all_targets_reached`) and timeouts (`truncated`).
 - Demonstrates **longer episodes** and a **sparse** `target_reached` reward
   (cumulative reward is a staircase).
+- **Full-body capture**: every one of the 11 Franka rigid bodies has its pose
+  recorded each frame (`pose_<body>_*` columns), so the `articulation3d` viewer
+  replays the whole arm moving — not just the end-effector.
 
 ## View them (no Isaac needed)
 

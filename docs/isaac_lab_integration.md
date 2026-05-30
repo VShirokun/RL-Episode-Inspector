@@ -94,7 +94,23 @@ Why it's a good test fixture:
   spike only when the EE enters a target zone, so `reward_cumulative` is a
   staircase. Verified: successful episodes show 8 spikes; the viewer renders them
   clearly.
-- **New viewer** — `viewer.type = "reach3d"` (EE sphere + target-zone marker).
+- **Full-body capture** — every Franka rigid body's pose is recorded each frame,
+  so the `articulation3d` viewer replays the whole arm (not just the EE).
+
+### Capturing all robot bodies (any articulation)
+
+`examples/isaaclab_poses.py` is a generic helper:
+
+- `body_structure(robot)` → `(body_names, parent_indices)` (tries the PhysX link
+  tree; falls back to a serial chain).
+- `read_body_poses(robot, env_origin)` → `{body: (px,py,pz,qw,qx,qy,qz)}` in the
+  env-local frame each frame.
+
+A task adapter calls `recorder.register_bodies(names, parents)` once and passes
+`record_frame(..., poses=read_body_poses(robot, origin))` each frame, with
+`viewer_type="articulation3d"`. Works for any Isaac Lab articulation (Franka now,
+a humanoid later). The Newton backend exposes body state as warp arrays (handled
+by `to_numpy`).
 
 Gotchas specific to this task (learned during implementation):
 - The IK `body_offset` means the *controlled* point is the fingertip

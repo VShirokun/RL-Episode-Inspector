@@ -60,6 +60,42 @@ reward_<term>_raw, reward_<term>_weighted   for each reward term  # reward_raw/w
 reward_step_total, reward_cumulative                              # reward_total
 ```
 
+## Body poses (full-robot replay)
+
+To replay an entire articulation (every link, not just one point), each rigid
+body's pose is recorded as 7 flattened columns:
+
+```
+pose_<body>_px, pose_<body>_py, pose_<body>_pz     # position (env-local frame)
+pose_<body>_qw, pose_<body>_qx, pose_<body>_qy, pose_<body>_qz   # quaternion
+```
+
+These are declared as signals with `kind: "pose"` (a distinct kind so they don't
+clutter the reward/value UI panels). The articulation **structure** lives in
+`metadata.viewer`:
+
+```json
+"viewer": {
+  "type": "articulation3d",
+  "up_axis": "z",
+  "bodies": [
+    {"name": "panda_link0", "parent": -1,
+     "pos": ["pose_panda_link0_px","pose_panda_link0_py","pose_panda_link0_pz"],
+     "quat": ["pose_panda_link0_qw","pose_panda_link0_qx","pose_panda_link0_qy","pose_panda_link0_qz"]},
+    {"name": "panda_link1", "parent": 0, "pos": [...], "quat": [...]}
+  ],
+  "markers": [
+    {"name": "target", "pos": ["target_x","target_y","target_z"], "color": "#4ecb71"}
+  ]
+}
+```
+
+`parent` indexes another body in `bodies` (-1 = root) so the viewer can draw
+bones. `up_axis` tells the viewer which axis is up in the recorded poses (`"z"`
+for Isaac). This is generic over any robot — Franka today, a humanoid later (just
+more bodies). The recorder produces it via `register_bodies(names, parents)` +
+`record_frame(poses={body: (px,py,pz,qw,qx,qy,qz)})`.
+
 ## Reward naming convention
 
 | Name | Definition |
