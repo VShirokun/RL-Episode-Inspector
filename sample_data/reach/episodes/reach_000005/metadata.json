@@ -936,7 +936,8 @@
           "pose_panda_link0_qx",
           "pose_panda_link0_qy",
           "pose_panda_link0_qz"
-        ]
+        ],
+        "mesh": "franka/panda_link0.glb"
       },
       {
         "name": "panda_link1",
@@ -951,7 +952,8 @@
           "pose_panda_link1_qx",
           "pose_panda_link1_qy",
           "pose_panda_link1_qz"
-        ]
+        ],
+        "mesh": "franka/panda_link1.glb"
       },
       {
         "name": "panda_link2",
@@ -966,7 +968,8 @@
           "pose_panda_link2_qx",
           "pose_panda_link2_qy",
           "pose_panda_link2_qz"
-        ]
+        ],
+        "mesh": "franka/panda_link2.glb"
       },
       {
         "name": "panda_link3",
@@ -981,7 +984,8 @@
           "pose_panda_link3_qx",
           "pose_panda_link3_qy",
           "pose_panda_link3_qz"
-        ]
+        ],
+        "mesh": "franka/panda_link3.glb"
       },
       {
         "name": "panda_link4",
@@ -996,7 +1000,8 @@
           "pose_panda_link4_qx",
           "pose_panda_link4_qy",
           "pose_panda_link4_qz"
-        ]
+        ],
+        "mesh": "franka/panda_link4.glb"
       },
       {
         "name": "panda_link5",
@@ -1011,7 +1016,8 @@
           "pose_panda_link5_qx",
           "pose_panda_link5_qy",
           "pose_panda_link5_qz"
-        ]
+        ],
+        "mesh": "franka/panda_link5.glb"
       },
       {
         "name": "panda_link6",
@@ -1026,7 +1032,8 @@
           "pose_panda_link6_qx",
           "pose_panda_link6_qy",
           "pose_panda_link6_qz"
-        ]
+        ],
+        "mesh": "franka/panda_link6.glb"
       },
       {
         "name": "panda_link7",
@@ -1041,7 +1048,8 @@
           "pose_panda_link7_qx",
           "pose_panda_link7_qy",
           "pose_panda_link7_qz"
-        ]
+        ],
+        "mesh": "franka/panda_link7.glb"
       },
       {
         "name": "panda_hand",
@@ -1056,7 +1064,8 @@
           "pose_panda_hand_qx",
           "pose_panda_hand_qy",
           "pose_panda_hand_qz"
-        ]
+        ],
+        "mesh": "franka/panda_hand.glb"
       },
       {
         "name": "panda_leftfinger",
@@ -1071,7 +1080,8 @@
           "pose_panda_leftfinger_qx",
           "pose_panda_leftfinger_qy",
           "pose_panda_leftfinger_qz"
-        ]
+        ],
+        "mesh": "franka/panda_leftfinger.glb"
       },
       {
         "name": "panda_rightfinger",
@@ -1086,7 +1096,8 @@
           "pose_panda_rightfinger_qx",
           "pose_panda_rightfinger_qy",
           "pose_panda_rightfinger_qz"
-        ]
+        ],
+        "mesh": "franka/panda_rightfinger.glb"
       }
     ],
     "markers": [
