@@ -22,7 +22,7 @@ function fakeEpisode(n = 100): LoadedEpisode {
 
 beforeEach(() => {
   usePlaybackStore.setState({
-    loaded: fakeEpisode(), currentFrame: 0, isPlaying: false, speed: 1,
+    loaded: fakeEpisode(), currentFrame: 0, isPlaying: false, speed: 1, loop: true,
   });
 });
 
@@ -59,8 +59,9 @@ describe("play restarts at end", () => {
   });
 });
 
-describe("tick advances and stops", () => {
+describe("tick advances and stops (loop off)", () => {
   it("advances while playing and halts at the end", () => {
+    usePlaybackStore.setState({ loop: false });
     usePlaybackStore.getState().play();
     usePlaybackStore.getState().tick(0.1); // 0.1s @ 60fps ~ +6 frames
     expect(usePlaybackStore.getState().currentFrame).toBeGreaterThan(0);
@@ -68,5 +69,23 @@ describe("tick advances and stops", () => {
     usePlaybackStore.getState().tick(100); // huge jump -> end
     expect(usePlaybackStore.getState().currentFrame).toBe(99);
     expect(usePlaybackStore.getState().isPlaying).toBe(false);
+  });
+});
+
+describe("looping", () => {
+  it("restarts at 0 and keeps playing when loop is on", () => {
+    usePlaybackStore.setState({ loop: true });
+    usePlaybackStore.getState().last(); // park near the end (pauses)
+    usePlaybackStore.getState().play();
+    usePlaybackStore.getState().setSpeed(4);
+    usePlaybackStore.getState().tick(100); // overshoot the end
+    expect(usePlaybackStore.getState().isPlaying).toBe(true); // still playing
+    expect(usePlaybackStore.getState().currentFrame).toBe(0); // wrapped to start
+  });
+
+  it("toggleLoop flips the flag", () => {
+    usePlaybackStore.setState({ loop: true });
+    usePlaybackStore.getState().toggleLoop();
+    expect(usePlaybackStore.getState().loop).toBe(false);
   });
 });

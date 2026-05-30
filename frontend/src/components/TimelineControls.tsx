@@ -8,8 +8,10 @@ export function TimelineControls() {
   const currentFrame = usePlaybackStore((s) => s.currentFrame);
   const numFrames = usePlaybackStore((s) => s.numFrames());
   const speed = usePlaybackStore((s) => s.speed);
+  const loop = usePlaybackStore((s) => s.loop);
   const loaded = usePlaybackStore((s) => s.loaded);
-  const { togglePlay, stepFrames, first, last, setFrame, setSpeed } = usePlaybackStore.getState();
+  const { togglePlay, stepFrames, first, last, setFrame, setSpeed, toggleLoop } =
+    usePlaybackStore.getState();
 
   const frame = Math.round(currentFrame);
   const t = loaded ? (frame * loaded.metadata.dt).toFixed(2) : "0.00";
@@ -48,6 +50,15 @@ export function TimelineControls() {
         </button>
         <button className="button" onClick={last} disabled={disabled} title="Last frame (End)">
           ⏭
+        </button>
+        <button
+          className={`button loop ${loop ? "active" : ""}`}
+          onClick={toggleLoop}
+          aria-pressed={loop}
+          data-testid="loop-toggle"
+          title={loop ? "Looping: on (click to disable)" : "Looping: off (click to enable)"}
+        >
+          🔁
         </button>
       </div>
 

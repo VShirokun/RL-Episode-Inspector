@@ -26,6 +26,7 @@ interface PlaybackState {
   currentFrame: number; // may be fractional during playback
   isPlaying: boolean;
   speed: PlaybackSpeed;
+  loop: boolean; // when true, playback restarts at frame 0 instead of stopping
 
   // derived
   numFrames: () => number;
@@ -43,6 +44,7 @@ interface PlaybackState {
   first: () => void;
   last: () => void;
   setSpeed: (speed: PlaybackSpeed) => void;
+  toggleLoop: () => void;
   tick: (elapsedSeconds: number) => void;
 }
 
@@ -64,6 +66,7 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => ({
   currentFrame: 0,
   isPlaying: false,
   speed: 1,
+  loop: true,
 
   numFrames: () => get().loaded?.metadata.num_frames ?? 0,
 
@@ -134,8 +137,10 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => ({
 
   setSpeed: (speed) => set({ speed }),
 
+  toggleLoop: () => set({ loop: !get().loop }),
+
   tick: (elapsedSeconds) => {
-    const { isPlaying, loaded, currentFrame, speed } = get();
+    const { isPlaying, loaded, currentFrame, speed, loop } = get();
     if (!isPlaying || !loaded) return;
     const { frame, reachedEnd } = advanceFrame(
       currentFrame,
@@ -144,7 +149,12 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => ({
       speed,
       elapsedSeconds,
     );
-    set({ currentFrame: frame, isPlaying: !reachedEnd });
+    if (reachedEnd && loop) {
+      // Restart from the beginning and keep playing.
+      set({ currentFrame: 0, isPlaying: true });
+    } else {
+      set({ currentFrame: frame, isPlaying: !reachedEnd });
+    }
   },
 }));
 

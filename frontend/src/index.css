@@ -96,6 +96,7 @@ body {
 .button:hover { border-color: var(--accent); }
 .button:disabled { opacity: 0.4; cursor: default; }
 .button.play { min-width: 44px; font-size: 14px; }
+.button.loop.active { border-color: var(--accent); color: var(--accent); background: #1c2740; }
 .button.ghost { margin-left: auto; }
 .ranking-buttons { display: flex; gap: 6px; }
 
