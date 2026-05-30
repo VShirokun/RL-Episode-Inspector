@@ -40,6 +40,11 @@ generate-cartpole-demo: ## Generate REAL Isaac Lab Cartpole episodes (needs Isaa
 	$(ISAACLAB)/isaaclab.sh -p python/rl_episode_inspector/examples/cartpole/generate_demo_episodes.py \
 		--output-dir $(EPISODES_DIR) --num-episodes 12 --seed 42 --env-id 0
 
+.PHONY: generate-reach-demo
+generate-reach-demo: ## Generate REAL Isaac Lab Franka Reach episodes (sparse reward; needs Isaac Lab)
+	$(ISAACLAB)/isaaclab.sh -p python/rl_episode_inspector/examples/reach/generate_demo_episodes.py \
+		--output-dir sample_data/reach/episodes --num-episodes 8 --seed 42 --episode-length 25
+
 # ---- servers ----
 .PHONY: backend-dev
 backend-dev: ## Run the backend API on :8000

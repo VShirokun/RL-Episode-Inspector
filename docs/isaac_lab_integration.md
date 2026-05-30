@@ -74,6 +74,37 @@ decomposition is computed by us (pure functions in `reward.py`) rather than read
 from Isaac Lab's `RewardManager`, so every term is available at every frame and
 the formulas match the fake generator.
 
+## Second task: Franka Reach (longer episodes + sparse reward)
+
+A richer demo than Cartpole, under `examples/reach/`. The Franka end-effector
+visits a sequence of 3D targets using `Isaac-Reach-Franka-IK-Abs-v0` — the action
+is an **absolute EE pose** and Isaac's differential IK solves the joint motion,
+so driving it is just feeding target poses (no hand-tuned controller).
+
+```bash
+PYTHONPATH=$PWD/python /path/to/isaaclab-env/bin/python \
+    python/rl_episode_inspector/examples/reach/generate_demo_episodes.py \
+    --output-dir sample_data/reach/episodes --num-episodes 8 --seed 42 --episode-length 25
+# or: make generate-reach-demo
+```
+
+Why it's a good test fixture:
+- **Longer episodes** — ~30 s / ~900 control steps at 1/30 s (vs Cartpole's ~5 s).
+- **Sparse reward** — `target_reached` is 0 on almost every frame, a +10 (weighted)
+  spike only when the EE enters a target zone, so `reward_cumulative` is a
+  staircase. Verified: successful episodes show 8 spikes; the viewer renders them
+  clearly.
+- **New viewer** — `viewer.type = "reach3d"` (EE sphere + target-zone marker).
+
+Gotchas specific to this task (learned during implementation):
+- The IK `body_offset` means the *controlled* point is the fingertip
+  (`panda_hand` + 0.107 m along local z), not `panda_hand` — measure/record that
+  point or the EE never "reaches".
+- Differential-IK steady-state tracking error is a few cm, so the reach
+  tolerance is **7 cm** (4 cm was too tight to ever register a reach).
+- Hold a **single fixed** EE orientation for all episodes; reading a fresh
+  per-reset orientation left some waypoints unreachable and the arm stuck.
+
 ## Vectorized environments (MVP limitation)
 
 > For the MVP the recorder records one selected environment (`num_envs=1`,

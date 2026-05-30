@@ -45,10 +45,17 @@ Then open <http://localhost:3000>, hit **Best**, and press **Space** to play.
 Requires a working Isaac Lab install (see [docs/isaac_lab_integration.md](docs/isaac_lab_integration.md)).
 
 ```bash
-make generate-cartpole-demo        # roll out the real Isaac Lab Cartpole task
+make generate-cartpole-demo        # real Isaac Lab Cartpole (balance)
+# or a richer task with longer episodes + a SPARSE reward:
+make generate-reach-demo           # real Franka Reach: visit a sequence of 3D targets
 make backend-dev
 make frontend-dev
 ```
+
+Two real Isaac Lab demo tasks ship as examples:
+- **Cartpole** (`examples/cartpole/`) — balance; dense multi-term reward; `cartpole` viewer.
+- **Franka Reach** (`examples/reach/`) — visit 3D targets via IK; ~30 s episodes; a
+  **sparse** `target_reached` reward (cumulative reward is a staircase); `reach3d` viewer.
 
 ## Documentation
 
