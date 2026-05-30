@@ -1,0 +1,1325 @@
+{
+  "schema_version": "0.1.0",
+  "episode_id": "humanoid_000002",
+  "run_id": "amp_run",
+  "task_name": "Humanoid",
+  "task_source": "amp_motion",
+  "env_id": 0,
+  "episode_index": 2,
+  "created_at": "2026-05-30T21:53:00Z",
+  "num_frames": 82,
+  "dt": 0.016666666666666666,
+  "fps": 60.0,
+  "duration_seconds": 1.3666666666666667,
+  "global_step_start": 0,
+  "global_step_end": 81,
+  "terminated": false,
+  "truncated": true,
+  "reset_reason": "motion_end",
+  "episode_return": 409.9678863286972,
+  "policy_checkpoint": null,
+  "seed": null,
+  "signals": [
+    {
+      "name": "root_height",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": "Pelvis height above ground",
+      "display": null
+    },
+    {
+      "name": "forward_velocity",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m/s",
+      "description": "Pelvis forward (x) velocity",
+      "display": null
+    },
+    {
+      "name": "reward_alive_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_alive_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_forward_velocity_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_forward_velocity_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_root_height_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_root_height_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_footstep_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_footstep_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_step_total",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "reward_cumulative",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_pelvis_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_pelvis_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_pelvis_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_pelvis_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_pelvis_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_pelvis_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_pelvis_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_torso_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_torso_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_torso_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_torso_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_torso_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_torso_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_torso_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_head_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_head_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_head_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_head_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_head_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_head_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_head_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_upper_arm_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_upper_arm_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_upper_arm_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_upper_arm_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_upper_arm_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_upper_arm_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_upper_arm_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_lower_arm_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_lower_arm_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_lower_arm_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_lower_arm_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_lower_arm_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_lower_arm_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_lower_arm_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_hand_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_hand_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_hand_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_hand_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_hand_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_hand_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_hand_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_upper_arm_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_upper_arm_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_upper_arm_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_upper_arm_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_upper_arm_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_upper_arm_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_upper_arm_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_lower_arm_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_lower_arm_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_lower_arm_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_lower_arm_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_lower_arm_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_lower_arm_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_lower_arm_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_hand_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_hand_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_hand_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_hand_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_hand_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_hand_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_hand_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_thigh_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_thigh_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_thigh_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_thigh_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_thigh_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_thigh_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_thigh_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_shin_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_shin_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_shin_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_shin_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_shin_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_shin_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_shin_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_foot_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_foot_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_foot_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_foot_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_foot_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_foot_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_right_foot_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_thigh_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_thigh_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_thigh_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_thigh_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_thigh_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_thigh_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_thigh_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_shin_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_shin_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_shin_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_shin_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_shin_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_shin_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_shin_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_foot_px",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_foot_py",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_foot_pz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_foot_qw",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_foot_qx",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_foot_qy",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    },
+    {
+      "name": "pose_left_foot_qz",
+      "kind": "pose",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "display": null
+    }
+  ],
+  "viewer": {
+    "type": "articulation3d",
+    "state_mapping": {},
+    "bodies": [
+      {
+        "name": "pelvis",
+        "parent": -1,
+        "pos": [
+          "pose_pelvis_px",
+          "pose_pelvis_py",
+          "pose_pelvis_pz"
+        ],
+        "quat": [
+          "pose_pelvis_qw",
+          "pose_pelvis_qx",
+          "pose_pelvis_qy",
+          "pose_pelvis_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "torso",
+        "parent": 0,
+        "pos": [
+          "pose_torso_px",
+          "pose_torso_py",
+          "pose_torso_pz"
+        ],
+        "quat": [
+          "pose_torso_qw",
+          "pose_torso_qx",
+          "pose_torso_qy",
+          "pose_torso_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "head",
+        "parent": 1,
+        "pos": [
+          "pose_head_px",
+          "pose_head_py",
+          "pose_head_pz"
+        ],
+        "quat": [
+          "pose_head_qw",
+          "pose_head_qx",
+          "pose_head_qy",
+          "pose_head_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "right_upper_arm",
+        "parent": 1,
+        "pos": [
+          "pose_right_upper_arm_px",
+          "pose_right_upper_arm_py",
+          "pose_right_upper_arm_pz"
+        ],
+        "quat": [
+          "pose_right_upper_arm_qw",
+          "pose_right_upper_arm_qx",
+          "pose_right_upper_arm_qy",
+          "pose_right_upper_arm_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "right_lower_arm",
+        "parent": 3,
+        "pos": [
+          "pose_right_lower_arm_px",
+          "pose_right_lower_arm_py",
+          "pose_right_lower_arm_pz"
+        ],
+        "quat": [
+          "pose_right_lower_arm_qw",
+          "pose_right_lower_arm_qx",
+          "pose_right_lower_arm_qy",
+          "pose_right_lower_arm_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "right_hand",
+        "parent": 4,
+        "pos": [
+          "pose_right_hand_px",
+          "pose_right_hand_py",
+          "pose_right_hand_pz"
+        ],
+        "quat": [
+          "pose_right_hand_qw",
+          "pose_right_hand_qx",
+          "pose_right_hand_qy",
+          "pose_right_hand_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "left_upper_arm",
+        "parent": 1,
+        "pos": [
+          "pose_left_upper_arm_px",
+          "pose_left_upper_arm_py",
+          "pose_left_upper_arm_pz"
+        ],
+        "quat": [
+          "pose_left_upper_arm_qw",
+          "pose_left_upper_arm_qx",
+          "pose_left_upper_arm_qy",
+          "pose_left_upper_arm_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "left_lower_arm",
+        "parent": 6,
+        "pos": [
+          "pose_left_lower_arm_px",
+          "pose_left_lower_arm_py",
+          "pose_left_lower_arm_pz"
+        ],
+        "quat": [
+          "pose_left_lower_arm_qw",
+          "pose_left_lower_arm_qx",
+          "pose_left_lower_arm_qy",
+          "pose_left_lower_arm_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "left_hand",
+        "parent": 7,
+        "pos": [
+          "pose_left_hand_px",
+          "pose_left_hand_py",
+          "pose_left_hand_pz"
+        ],
+        "quat": [
+          "pose_left_hand_qw",
+          "pose_left_hand_qx",
+          "pose_left_hand_qy",
+          "pose_left_hand_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "right_thigh",
+        "parent": 0,
+        "pos": [
+          "pose_right_thigh_px",
+          "pose_right_thigh_py",
+          "pose_right_thigh_pz"
+        ],
+        "quat": [
+          "pose_right_thigh_qw",
+          "pose_right_thigh_qx",
+          "pose_right_thigh_qy",
+          "pose_right_thigh_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "right_shin",
+        "parent": 9,
+        "pos": [
+          "pose_right_shin_px",
+          "pose_right_shin_py",
+          "pose_right_shin_pz"
+        ],
+        "quat": [
+          "pose_right_shin_qw",
+          "pose_right_shin_qx",
+          "pose_right_shin_qy",
+          "pose_right_shin_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "right_foot",
+        "parent": 10,
+        "pos": [
+          "pose_right_foot_px",
+          "pose_right_foot_py",
+          "pose_right_foot_pz"
+        ],
+        "quat": [
+          "pose_right_foot_qw",
+          "pose_right_foot_qx",
+          "pose_right_foot_qy",
+          "pose_right_foot_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "left_thigh",
+        "parent": 0,
+        "pos": [
+          "pose_left_thigh_px",
+          "pose_left_thigh_py",
+          "pose_left_thigh_pz"
+        ],
+        "quat": [
+          "pose_left_thigh_qw",
+          "pose_left_thigh_qx",
+          "pose_left_thigh_qy",
+          "pose_left_thigh_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "left_shin",
+        "parent": 12,
+        "pos": [
+          "pose_left_shin_px",
+          "pose_left_shin_py",
+          "pose_left_shin_pz"
+        ],
+        "quat": [
+          "pose_left_shin_qw",
+          "pose_left_shin_qx",
+          "pose_left_shin_qy",
+          "pose_left_shin_qz"
+        ],
+        "mesh": null
+      },
+      {
+        "name": "left_foot",
+        "parent": 13,
+        "pos": [
+          "pose_left_foot_px",
+          "pose_left_foot_py",
+          "pose_left_foot_pz"
+        ],
+        "quat": [
+          "pose_left_foot_qw",
+          "pose_left_foot_qx",
+          "pose_left_foot_qy",
+          "pose_left_foot_qz"
+        ],
+        "mesh": null
+      }
+    ],
+    "markers": [],
+    "up_axis": "z"
+  }
+}
