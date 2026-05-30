@@ -50,7 +50,8 @@ export function ArticulationViewer() {
     const dir = new THREE.DirectionalLight(0xffffff, 0.7);
     dir.position.set(2, 4, 3);
     scene.add(dir);
-    scene.add(new THREE.GridHelper(2, 20, 0x335, 0x223));
+    const grid = new THREE.GridHelper(2, 20, 0x335, 0x223);
+    scene.add(grid);
 
     let needsRender = true;
     let lastFrame = -1;
@@ -113,6 +114,41 @@ export function ArticulationViewer() {
       root.add(m);
       return m;
     });
+
+    // Auto-frame the camera from the bounding box of all body positions over
+    // the whole episode, so any robot/scale (a reach arm, a walking humanoid)
+    // is in view. Positions are sim z-up; map to three (x, z, -y) like `root`.
+    if (loaded0 && bodies.length > 0) {
+      let lo = [Infinity, Infinity, Infinity];
+      let hi = [-Infinity, -Infinity, -Infinity];
+      for (const bd of bodies) {
+        bd.pos.forEach((col, axis) => {
+          const arr = (loaded0.columns[col] as number[]) ?? [];
+          for (const v of arr) {
+            if (!Number.isFinite(v)) continue;
+            if (v < lo[axis]) lo[axis] = v;
+            if (v > hi[axis]) hi[axis] = v;
+          }
+        });
+      }
+      if (Number.isFinite(lo[0])) {
+        const cx = (lo[0] + hi[0]) / 2, cy = (lo[1] + hi[1]) / 2, cz = (lo[2] + hi[2]) / 2;
+        const radius = Math.max(0.4, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2);
+        const tx = cx, ty = cz, tz = -cy; // sim (z-up) -> three (y-up)
+        controls.target.set(tx, ty, tz);
+        const d = radius * 2.2;
+        camera.position.set(tx + d * 0.7, ty + d * 0.6, tz + d * 0.7);
+        camera.near = Math.max(0.01, d * 0.01);
+        camera.far = d * 30;
+        camera.updateProjectionMatrix();
+        // size the floor grid to the scene and place it under the motion (y=0 = ground)
+        const span = Math.max(2, Math.ceil(radius * 3));
+        scene.remove(grid);
+        const sized = new THREE.GridHelper(span, span * 2, 0x335, 0x223);
+        sized.position.set(tx, 0, tz);
+        scene.add(sized);
+      }
+    }
 
     const resize = () => {
       const w = mount.clientWidth || 1;
