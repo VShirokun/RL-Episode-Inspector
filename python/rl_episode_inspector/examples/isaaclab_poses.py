@@ -57,9 +57,18 @@ def _parents_or_chain(robot: Any, names: list[str]) -> list[int]:
 
 
 def read_body_poses(robot: Any, env_origin) -> dict[str, tuple[float, ...]]:
-    """Per-body pose ``{name: (px,py,pz,qw,qx,qy,qz)}`` in the env-local frame."""
+    """Per-body pose ``{name: (px,py,pz,qw,qx,qy,qz)}`` in the env-local frame.
+
+    Isaac Lab documents ``body_quat_w`` as (w, x, y, z), but under the Newton
+    backend it's a warp array and warp stores quaternions as (x, y, z, w). We
+    read the raw array via numpy, so reorder warp quats to (w, x, y, z); the
+    torch path is already wxyz.
+    """
+    quat_raw = robot.data.body_quat_w
     pos = to_numpy(robot.data.body_pos_w)[0]  # (num_bodies, 3), world frame
-    quat = to_numpy(robot.data.body_quat_w)[0]  # (num_bodies, 4), wxyz
+    quat = to_numpy(quat_raw)[0]  # (num_bodies, 4)
+    if "warp" in type(quat_raw).__module__:
+        quat = quat[:, [3, 0, 1, 2]]  # xyzw -> wxyz
     out: dict[str, tuple[float, ...]] = {}
     for i, name in enumerate(robot.data.body_names):
         p = pos[i] - env_origin
