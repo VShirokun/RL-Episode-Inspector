@@ -98,18 +98,18 @@ export function Viewer3D() {
     };
     let needsRender = true;
     let lastFrame = -1;
+    let running = false;
     resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(mount);
 
     let raf = 0;
-    const render = () => {
-      // On-demand rendering: only redraw when something actually changed, so the
-      // app goes idle when paused/finished instead of pinning a CPU core.
+    const loop = () => {
+      // On-demand rendering that also STOPS when idle (see ArticulationViewer):
+      // only redraw on change, and tear the rAF loop down when nothing animates.
       const { loaded, currentFrame, isPlaying } = usePlaybackStore.getState();
-      const moved = controls.update(); // returns true while the camera is moving
+      const moved = controls.update(); // true while the camera is moving
       const frame = loaded ? clampFrame(currentFrame, loaded.metadata.num_frames) : -1;
-      if (loaded && (isPlaying || moved || needsRender || frame !== lastFrame)) {
+      const dirty = isPlaying || moved || needsRender || frame !== lastFrame;
+      if (loaded && dirty) {
         const { cartCol, angleCol } = readMapping();
         cart.position.x = (loaded.columns[cartCol]?.[frame] as number) ?? 0;
         polePivot.rotation.z = -((loaded.columns[angleCol]?.[frame] as number) ?? 0);
@@ -117,13 +117,38 @@ export function Viewer3D() {
         lastFrame = frame;
         needsRender = false;
       }
-      raf = requestAnimationFrame(render);
+      if (isPlaying || moved || needsRender || frame !== lastFrame) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        running = false;
+      }
     };
-    render();
+    const ensureRunning = () => {
+      if (!running) {
+        running = true;
+        raf = requestAnimationFrame(loop);
+      }
+    };
+    const requestRender = () => {
+      needsRender = true;
+      ensureRunning();
+    };
+    const ro = new ResizeObserver(() => {
+      resize();
+      ensureRunning();
+    });
+    ro.observe(mount);
+    controls.addEventListener("start", requestRender);
+    controls.addEventListener("change", requestRender);
+    const unsubscribe = usePlaybackStore.subscribe(requestRender);
+    ensureRunning();
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      controls.removeEventListener("start", requestRender);
+      controls.removeEventListener("change", requestRender);
+      unsubscribe();
       controls.dispose();
       renderer.dispose();
       mount.removeChild(renderer.domElement);

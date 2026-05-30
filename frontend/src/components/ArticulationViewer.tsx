@@ -159,19 +159,19 @@ export function ArticulationViewer() {
       needsRender = true;
     };
     resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(mount);
 
     const tmp = new THREE.Vector3();
     const MIN_DRAW_MS = 1000 / 40; // cap GL draws at ~40 fps (eases software GL)
     let lastDraw = 0;
+    let running = false;
     let raf = 0;
-    const render = (now: number) => {
+
+    const loop = (now: number) => {
       const { loaded, currentFrame, isPlaying } = usePlaybackStore.getState();
       const moved = controls.update();
       const idx = loaded ? clampFrame(currentFrame, loaded.metadata.num_frames) : -1;
-      const due = now - lastDraw >= MIN_DRAW_MS;
-      if (loaded && due && (isPlaying || moved || needsRender || idx !== lastFrame)) {
+      const dirty = isPlaying || moved || needsRender || idx !== lastFrame;
+      if (loaded && dirty && now - lastDraw >= MIN_DRAW_MS) {
         lastDraw = now;
         lastFrame = idx;
         needsRender = false;
@@ -198,13 +198,43 @@ export function ArticulationViewer() {
         });
         renderer.render(scene, camera);
       }
-      raf = requestAnimationFrame(render);
+      // Keep the rAF loop alive only while there's something to animate; once
+      // idle (paused, settled, nothing pending) STOP it so the tab does zero
+      // work — no 60 fps wakeups that would keep the GPU/compositor busy.
+      if (isPlaying || moved || needsRender || idx !== lastFrame) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        running = false;
+      }
     };
-    raf = requestAnimationFrame(render);
+    const ensureRunning = () => {
+      if (!running) {
+        running = true;
+        raf = requestAnimationFrame(loop);
+      }
+    };
+    const requestRender = () => {
+      needsRender = true;
+      ensureRunning();
+    };
+
+    // Wake the loop on camera interaction, playback ticks, seeks, and resizes.
+    const ro = new ResizeObserver(() => {
+      resize();
+      ensureRunning();
+    });
+    ro.observe(mount);
+    controls.addEventListener("start", requestRender);
+    controls.addEventListener("change", requestRender);
+    const unsubscribe = usePlaybackStore.subscribe(requestRender);
+    ensureRunning();
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      controls.removeEventListener("start", requestRender);
+      controls.removeEventListener("change", requestRender);
+      unsubscribe();
       controls.dispose();
       renderer.dispose();
       mount.removeChild(renderer.domElement);

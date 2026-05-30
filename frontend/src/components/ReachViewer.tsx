@@ -111,18 +111,18 @@ export function ReachViewer() {
     };
     let needsRender = true;
     let lastFrame = -1;
+    let running = false;
     resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(mount);
 
     const cols = roleColumns();
     let raf = 0;
-    const render = () => {
-      // On-demand rendering (see Viewer3D): redraw only when something changed.
+    const loop = () => {
+      // On-demand rendering that stops when idle (see ArticulationViewer).
       const { loaded, currentFrame, isPlaying } = usePlaybackStore.getState();
       const moved = controls.update();
       const idx = loaded ? clampFrame(currentFrame, loaded.metadata.num_frames) : -1;
-      if (loaded && (isPlaying || moved || needsRender || idx !== lastFrame)) {
+      const dirty = isPlaying || moved || needsRender || idx !== lastFrame;
+      if (loaded && dirty) {
         lastFrame = idx;
         needsRender = false;
         const get = (c: string) => (loaded.columns[c]?.[idx] as number) ?? 0;
@@ -141,13 +141,38 @@ export function ReachViewer() {
         pos.needsUpdate = true;
         renderer.render(scene, camera);
       }
-      raf = requestAnimationFrame(render);
+      if (isPlaying || moved || needsRender || idx !== lastFrame) {
+        raf = requestAnimationFrame(loop);
+      } else {
+        running = false;
+      }
     };
-    render();
+    const ensureRunning = () => {
+      if (!running) {
+        running = true;
+        raf = requestAnimationFrame(loop);
+      }
+    };
+    const requestRender = () => {
+      needsRender = true;
+      ensureRunning();
+    };
+    const ro = new ResizeObserver(() => {
+      resize();
+      ensureRunning();
+    });
+    ro.observe(mount);
+    controls.addEventListener("start", requestRender);
+    controls.addEventListener("change", requestRender);
+    const unsubscribe = usePlaybackStore.subscribe(requestRender);
+    ensureRunning();
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
+      controls.removeEventListener("start", requestRender);
+      controls.removeEventListener("change", requestRender);
+      unsubscribe();
       controls.dispose();
       renderer.dispose();
       mount.removeChild(renderer.domElement);
