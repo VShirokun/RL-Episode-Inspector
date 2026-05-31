@@ -30,6 +30,17 @@ export function ArticulationViewer() {
     const bodies: BodySpec[] = loaded0?.metadata.viewer.bodies ?? [];
     const markers: MarkerSpec[] = loaded0?.metadata.viewer.markers ?? [];
     const upAxis = loaded0?.metadata.viewer.up_axis ?? "z";
+    // "quaternion": apply the recorded body quaternion (sim-frame poses, e.g.
+    // Franka). "bone": orient each body's mesh long axis along its bone toward
+    // its child joint — used when recorded rotations are in a different frame
+    // than the geometry (retargeted humanoid mocap: PhysX body frame is rotated
+    // ~90° from the authored mesh frame).
+    const orientMode = loaded0?.metadata.viewer.orient_mode ?? "quaternion";
+    // First child of each body (for bone orientation); -1 if it's a leaf.
+    const childIdx: number[] = bodies.map(() => -1);
+    bodies.forEach((b, i) => {
+      if (b.parent >= 0 && childIdx[b.parent] < 0) childIdx[b.parent] = i;
+    });
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x10131a);
@@ -70,6 +81,16 @@ export function ArticulationViewer() {
     const rootMat = new THREE.MeshStandardMaterial({ color: 0x8899aa, metalness: 0.2, roughness: 0.6 });
     const limbMat = new THREE.MeshStandardMaterial({ color: 0x6f86b8, metalness: 0.15, roughness: 0.75 });
 
+    // Per-body unit vector of the mesh's longest local axis, filled when its GLB
+    // loads; used only in "bone" mode to align the geometry to the bone.
+    const longAxis: (THREE.Vector3 | null)[] = bodies.map(() => null);
+    const computeLongAxis = (obj: THREE.Object3D): THREE.Vector3 => {
+      const size = new THREE.Box3().setFromObject(obj).getSize(new THREE.Vector3());
+      if (size.x >= size.y && size.x >= size.z) return new THREE.Vector3(1, 0, 0);
+      if (size.y >= size.z) return new THREE.Vector3(0, 1, 0);
+      return new THREE.Vector3(0, 0, 1);
+    };
+
     // One group per body; child is a real mesh, a solid joint sphere, or a cube.
     const bodyGroups = bodies.map((b, i) => {
       const g = new THREE.Group();
@@ -84,8 +105,11 @@ export function ArticulationViewer() {
         needsRender = true;
       };
       if (solid && b.mesh) {
-        loader.load(`/api/assets/${b.mesh}`, (gltf) => { g.add(gltf.scene); needsRender = true; },
-          undefined, () => addJoint()); // GLB missing/failed -> solid joint
+        loader.load(`/api/assets/${b.mesh}`, (gltf) => {
+          g.add(gltf.scene);
+          longAxis[i] = computeLongAxis(gltf.scene);
+          needsRender = true;
+        }, undefined, () => addJoint()); // GLB missing/failed -> solid joint
       } else if (solid) {
         addJoint(); // meshless body in models mode -> solid joint sphere
       } else {
@@ -169,6 +193,8 @@ export function ArticulationViewer() {
 
     const tmp = new THREE.Vector3();
     const boneDir = new THREE.Vector3();
+    const vSelf = new THREE.Vector3();
+    const vOther = new THREE.Vector3();
     const followTarget = new THREE.Vector3();
     const followDelta = new THREE.Vector3();
     const UP = new THREE.Vector3(0, 1, 0); // CylinderGeometry axis
@@ -188,11 +214,27 @@ export function ArticulationViewer() {
         lastFrame = idx;
         needsRender = false;
         const num = (c: string) => (loaded.columns[c]?.[idx] as number) ?? 0;
+        const bodyPos = (j: number, out: THREE.Vector3) =>
+          out.set(num(bodies[j].pos[0]), num(bodies[j].pos[1]), num(bodies[j].pos[2]));
         bodies.forEach((b, i) => {
           const g = bodyGroups[i];
           g.position.set(num(b.pos[0]), num(b.pos[1]), num(b.pos[2]));
-          // recorded quaternion is (w,x,y,z); Three.js wants (x,y,z,w)
-          g.quaternion.set(num(b.quat[1]), num(b.quat[2]), num(b.quat[3]), num(b.quat[0]));
+          const la = longAxis[i];
+          if (orientMode === "bone" && la) {
+            // Orient the mesh's long axis along the bone: toward the child joint
+            // if this body has one, else away from the parent (leaf bodies).
+            vSelf.copy(g.position);
+            const other = childIdx[i] >= 0 ? childIdx[i] : b.parent;
+            if (other >= 0) {
+              bodyPos(other, vOther);
+              if (childIdx[i] >= 0) boneDir.subVectors(vOther, vSelf);
+              else boneDir.subVectors(vSelf, vOther);
+              if (boneDir.lengthSq() > 1e-9) g.quaternion.setFromUnitVectors(la, boneDir.normalize());
+            }
+          } else {
+            // recorded quaternion is (w,x,y,z); Three.js wants (x,y,z,w)
+            g.quaternion.set(num(b.quat[1]), num(b.quat[2]), num(b.quat[3]), num(b.quat[0]));
+          }
         });
         bodies.forEach((b, i) => {
           const bone = bones[i];

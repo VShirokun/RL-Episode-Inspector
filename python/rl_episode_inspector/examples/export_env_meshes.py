@@ -22,6 +22,18 @@ def main() -> None:
     parser.add_argument("--asset-name", default="robot", help="scene articulation key")
     parser.add_argument("--out-dir", required=True)
     parser.add_argument("--robot-key", required=True, help="subdir under out-dir, e.g. 'franka'")
+    parser.add_argument(
+        "--frame",
+        choices=["physics", "usd"],
+        default="physics",
+        help=(
+            "Which body frame to bake geometry into. 'physics' uses the live "
+            "body_pos_w/quat_w (correct when the reset pose matches the authored "
+            "USD pose, e.g. Franka). 'usd' uses each body link's authored USD "
+            "transform (pose-independent — required when reset != authored pose, "
+            "e.g. the AMP humanoid is reset to a mocap frame)."
+        ),
+    )
 
     from isaaclab.app import AppLauncher
 
@@ -47,7 +59,7 @@ def main() -> None:
     unwrapped = env.unwrapped
     robot = unwrapped.scene[args.asset_name]
     body_names = list(robot.body_names)
-    body_poses = body_world_poses(robot)
+    body_poses = body_world_poses(robot) if args.frame == "physics" else None
 
     # robot prim path for env 0
     root_path = None

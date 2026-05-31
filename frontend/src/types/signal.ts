@@ -40,4 +40,5 @@ export interface ViewerSpec {
   bodies?: BodySpec[];
   markers?: MarkerSpec[];
   up_axis?: "z" | "y";
+  orient_mode?: "quaternion" | "bone";
 }

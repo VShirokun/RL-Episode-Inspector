@@ -151,10 +151,17 @@ def export_articulation_meshes(
             return body_world[body]
         if body_poses and body in body_poses:
             pos, quat = body_poses[body]  # quat is (w, x, y, z), world frame
+            # body_poses are in METERS (Isaac Lab physics API), but `gpw` from the
+            # XformCache is in STAGE units. Build this matrix in stage units (pos /
+            # mpu) so the two translations cancel in `gpw * inv(bw)`; the final
+            # `* stage_mpu` then converts the baked verts back to meters. (For a
+            # 1 m/unit stage like Franka's, mpu==1 and this is a no-op.)
             m = Gf.Matrix4d(1.0)
             m.SetRotateOnly(Gf.Quatd(float(quat[0]),
                                      Gf.Vec3d(float(quat[1]), float(quat[2]), float(quat[3]))))
-            m.SetTranslateOnly(Gf.Vec3d(float(pos[0]), float(pos[1]), float(pos[2])))
+            m.SetTranslateOnly(Gf.Vec3d(float(pos[0]) / stage_mpu,
+                                        float(pos[1]) / stage_mpu,
+                                        float(pos[2]) / stage_mpu))
             body_world[body] = m
         else:
             bp = sample_prim
