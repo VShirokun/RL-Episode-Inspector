@@ -39,6 +39,7 @@ def main() -> None:
     import omni.usd
     from isaaclab_tasks.utils import parse_env_cfg
 
+    from rl_episode_inspector.examples.isaaclab_poses import body_world_poses
     from rl_episode_inspector.examples.scene_geometry import export_articulation_meshes
 
     env = gym.make(args.task, cfg=parse_env_cfg(args.task, num_envs=1))
@@ -46,6 +47,7 @@ def main() -> None:
     unwrapped = env.unwrapped
     robot = unwrapped.scene[args.asset_name]
     body_names = list(robot.body_names)
+    body_poses = body_world_poses(robot)
 
     # robot prim path for env 0
     root_path = None
@@ -57,7 +59,8 @@ def main() -> None:
     stage = omni.usd.get_context().get_stage()
     diag: list[str] = []
     meshes = export_articulation_meshes(
-        stage, root_path, body_names, args.out_dir, args.robot_key, diag=diag
+        stage, root_path, body_names, args.out_dir, args.robot_key,
+        body_poses=body_poses, diag=diag,
     )
 
     with open("/tmp/rlei_mesh_export.txt", "w") as fh:

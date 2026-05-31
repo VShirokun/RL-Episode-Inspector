@@ -56,6 +56,21 @@ def _parents_or_chain(robot: Any, names: list[str]) -> list[int]:
     return [-1] + list(range(n - 1))
 
 
+def body_world_poses(robot: Any) -> dict[str, tuple[Any, Any]]:
+    """{body_name: (position[3], quaternion wxyz[4])} in the WORLD frame.
+
+    Used to bake meshes relative to the exact physics body frame (so exported
+    geometry orients correctly in the viewer). Call after a reset/step so the
+    articulation data is populated.
+    """
+    pos = to_numpy(robot.data.body_pos_w)[0]
+    quat_raw = robot.data.body_quat_w
+    quat = to_numpy(quat_raw)[0]
+    if "warp" in type(quat_raw).__module__:
+        quat = quat[:, [3, 0, 1, 2]]  # warp xyzw -> wxyz
+    return {name: (pos[i], quat[i]) for i, name in enumerate(robot.data.body_names)}
+
+
 def read_body_poses(robot: Any, env_origin) -> dict[str, tuple[float, ...]]:
     """Per-body pose ``{name: (px,py,pz,qw,qx,qy,qz)}`` in the env-local frame.
 

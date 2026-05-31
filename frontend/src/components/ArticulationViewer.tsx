@@ -123,20 +123,19 @@ export function ArticulationViewer() {
       return m;
     });
 
-    // Auto-frame the camera from the bounding box of all body positions over
-    // the whole episode, so any robot/scale (a reach arm, a walking humanoid)
-    // is in view. Positions are sim z-up; map to three (x, z, -y) like `root`.
+    // Auto-frame from the robot's extent at FRAME 0 (its actual size, not the
+    // whole trajectory — a walking/dancing figure translates a lot, which would
+    // frame it tiny). The follow-cam then keeps the moving root centered.
+    // Positions are sim z-up; map to three (x, z, -y) like `root`.
     if (loaded0 && bodies.length > 0) {
-      let lo = [Infinity, Infinity, Infinity];
-      let hi = [-Infinity, -Infinity, -Infinity];
+      const lo = [Infinity, Infinity, Infinity];
+      const hi = [-Infinity, -Infinity, -Infinity];
       for (const bd of bodies) {
         bd.pos.forEach((col, axis) => {
-          const arr = (loaded0.columns[col] as number[]) ?? [];
-          for (const v of arr) {
-            if (!Number.isFinite(v)) continue;
-            if (v < lo[axis]) lo[axis] = v;
-            if (v > hi[axis]) hi[axis] = v;
-          }
+          const v = (loaded0.columns[col]?.[0] as number) ?? NaN;
+          if (!Number.isFinite(v)) return;
+          if (v < lo[axis]) lo[axis] = v;
+          if (v > hi[axis]) hi[axis] = v;
         });
       }
       if (Number.isFinite(lo[0])) {
@@ -170,7 +169,10 @@ export function ArticulationViewer() {
 
     const tmp = new THREE.Vector3();
     const boneDir = new THREE.Vector3();
+    const followTarget = new THREE.Vector3();
+    const followDelta = new THREE.Vector3();
     const UP = new THREE.Vector3(0, 1, 0); // CylinderGeometry axis
+    const rootIdx = Math.max(0, bodies.findIndex((b) => b.parent < 0)); // follow this body
     const MIN_DRAW_MS = 1000 / 40; // cap GL draws at ~40 fps (eases software GL)
     let lastDraw = 0;
     let running = false;
@@ -215,6 +217,14 @@ export function ArticulationViewer() {
           tmp.set(num(mk.pos[0]), num(mk.pos[1]), num(mk.pos[2]));
           markerMeshes[i].position.copy(tmp);
         });
+        // Follow-cam: keep the root body centered (so a walking/dancing figure
+        // stays in view). Translate camera + target by the root's movement; user
+        // orbit still works. Static-root robots (e.g. the reach arm) are a no-op.
+        followTarget.copy(bodyGroups[rootIdx].position);
+        root.localToWorld(followTarget);
+        followDelta.subVectors(followTarget, controls.target);
+        camera.position.add(followDelta);
+        controls.target.copy(followTarget);
         renderer.render(scene, camera);
       }
       // Keep the rAF loop alive only while there's something to animate; once

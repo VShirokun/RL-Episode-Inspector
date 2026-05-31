@@ -105,6 +105,7 @@ def export_articulation_meshes(
     body_names: list[str],
     out_dir: str | Path,
     robot_key: str,
+    body_poses: dict[str, tuple[Any, Any]] | None = None,
     diag: list[str] | None = None,
 ) -> dict[str, str]:
     """Export one GLB per body of the articulation; return {body: rel_glb_path}.
@@ -112,6 +113,15 @@ def export_articulation_meshes(
     Walks the composed stage under ``root_prim_path`` (descending into instance
     proxies), assigns each visual geom to its owning rigid body, bakes it into
     the body-local frame, and writes ``<out_dir>/<robot_key>/<body>.glb``.
+
+    ``body_poses`` maps body name -> (position[3], quaternion wxyz[4]) in the
+    WORLD frame, taken from the physics articulation (robot.data.body_pos_w /
+    body_quat_w) at export time. This is the frame the recorder stores, so baking
+    relative to it guarantees the mesh orients correctly in the viewer. The USD
+    prim's own transform can differ from the physics body frame (e.g. the Isaac
+    humanoid: a capsule's orienting rotation lives between the link prim and the
+    geom), which would rotate parts wrongly. If omitted, the USD prim transform
+    (orthonormalized) is used as a fallback.
     """
     import trimesh
     from pxr import Gf, Usd, UsdGeom
@@ -132,9 +142,26 @@ def export_articulation_meshes(
             cur = cur.GetParent()
         return None
 
-    # body name -> world transform (rest pose), and accumulated geometry
+    # body name -> world transform, and accumulated geometry
     body_world: dict[str, Gf.Matrix4d] = {}
     geo: dict[str, list[tuple[np.ndarray, np.ndarray]]] = {b: [] for b in body_names}
+
+    def body_world_matrix(body: str, sample_prim: Any) -> Gf.Matrix4d:
+        if body in body_world:
+            return body_world[body]
+        if body_poses and body in body_poses:
+            pos, quat = body_poses[body]  # quat is (w, x, y, z), world frame
+            m = Gf.Matrix4d(1.0)
+            m.SetRotateOnly(Gf.Quatd(float(quat[0]),
+                                     Gf.Vec3d(float(quat[1]), float(quat[2]), float(quat[3]))))
+            m.SetTranslateOnly(Gf.Vec3d(float(pos[0]), float(pos[1]), float(pos[2])))
+            body_world[body] = m
+        else:
+            bp = sample_prim
+            while bp.GetName() != body:
+                bp = bp.GetParent()
+            body_world[body] = Gf.Matrix4d(cache.GetLocalToWorldTransform(bp)).GetOrthonormalized()
+        return body_world[body]
 
     for prim in Usd.PrimRange(root_prim, Usd.TraverseInstanceProxies()):
         t = prim.GetTypeName()
@@ -152,20 +179,12 @@ def export_articulation_meshes(
             continue
         verts, faces = result
 
-        if body not in body_world:
-            body_prim = prim
-            while body_prim.GetName() != body:
-                body_prim = body_prim.GetParent()
-            body_world[body] = cache.GetLocalToWorldTransform(body_prim)
         gpw = cache.GetLocalToWorldTransform(prim)
-        # body_pos_w/quat_w (what the recorder stores) is a RIGID, scale-free
-        # frame. If the body/link prim carries a scale in its xform (Franka links
-        # have a cm->m scale; the humanoid feet scale a unit Cube), dividing by
-        # the body's *full* transform would cancel that scale and bloat the mesh
-        # (Franka 100x; feet -> 2 m). Orthonormalize to drop the body scale so the
-        # visual scale stays baked into the geometry.
-        body_inv = Gf.Matrix4d(body_world[body]).GetOrthonormalized().GetInverse()
-        rel = gpw * body_inv
+        # Bake relative to the physics body frame (body_poses) — the exact frame
+        # the recorder stores. Using the body's rigid (scale-free) world transform
+        # also keeps any visual scale baked in (Franka links have a cm->m scale;
+        # the humanoid feet scale a unit Cube) instead of cancelling it.
+        rel = gpw * body_world_matrix(body, prim).GetInverse()
         m = np.array(rel, dtype=float)  # row-vector convention: v' = [v,1] @ m
         raw_lo, raw_hi = verts.min(0), verts.max(0)
         verts = (verts @ m[:3, :3] + m[3, :3]) * stage_mpu

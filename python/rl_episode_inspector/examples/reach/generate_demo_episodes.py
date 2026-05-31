@@ -53,6 +53,7 @@ def main() -> None:
 
     from rl_episode_inspector.examples.isaaclab_poses import (
         body_structure,
+        body_world_poses,
         read_body_poses,
         to_numpy,
     )
@@ -155,8 +156,10 @@ def main() -> None:
         root_path = list(robot.root_physx_view.prim_paths)[0]
     except Exception:  # noqa: BLE001
         root_path = str(robot.cfg.prim_path).replace("env_.*", "env_0").replace(".*", "0")
+    env.reset(seed=args.seed)  # populate articulation data before reading body poses
     mesh_map = export_articulation_meshes(
-        omni.usd.get_context().get_stage(), root_path, body_names, assets_dir, "franka"
+        omni.usd.get_context().get_stage(), root_path, body_names, assets_dir, "franka",
+        body_poses=body_world_poses(robot),
     )
     body_meshes = [mesh_map.get(name) for name in body_names]
     recorder.register_bodies(body_names, body_parents, meshes=body_meshes)
@@ -168,7 +171,6 @@ def main() -> None:
     # reused for every episode. Holding a consistent orientation keeps all
     # workspace waypoints reachable; reading a fresh per-reset orientation made
     # some episodes get stuck.
-    env.reset(seed=args.seed)
     _, hold_quat = read_ee()
 
     for ep in range(args.num_episodes):
