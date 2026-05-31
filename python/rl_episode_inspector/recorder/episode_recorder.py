@@ -69,7 +69,6 @@ class EpisodeRecorder:
         signal_descriptions: dict[str, str] | None = None,
         markers: list[MarkerSpec] | None = None,
         up_axis: str = "z",
-        orient_mode: str = "quaternion",
         max_saved_episodes: int | None = None,
     ) -> None:
         self.store = EpisodeStore(output_dir)
@@ -86,7 +85,6 @@ class EpisodeRecorder:
         self.signal_descriptions = dict(signal_descriptions or {})
         self.markers = list(markers or [])
         self.up_axis = up_axis
-        self.orient_mode = orient_mode
         self.max_saved_episodes = max_saved_episodes
 
         # Articulation structure (persists across episodes once registered).
@@ -260,7 +258,6 @@ class EpisodeRecorder:
                 bodies=self._body_specs,
                 markers=self.markers,
                 up_axis=self.up_axis,
-                orient_mode=self.orient_mode,
             ),
         )
 

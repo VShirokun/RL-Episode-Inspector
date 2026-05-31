@@ -164,10 +164,19 @@ def export_articulation_meshes(
                                         float(pos[2]) / stage_mpu))
             body_world[body] = m
         else:
+            # Use the rigid-body LINK prim's transform. A visual geom is often
+            # named the same as its link (e.g. ".../right_upper_arm/right_upper_arm"),
+            # so we must take the TOPMOST ancestor with the body name (the link),
+            # not the same-named geom — otherwise the geom's own orienting xform
+            # (which places the capsule correctly in the link frame) gets cancelled
+            # and every part bakes ~90° wrong.
+            link = sample_prim
             bp = sample_prim
-            while bp.GetName() != body:
+            while bp and bp.IsValid():
+                if bp.GetName() == body:
+                    link = bp
                 bp = bp.GetParent()
-            body_world[body] = Gf.Matrix4d(cache.GetLocalToWorldTransform(bp)).GetOrthonormalized()
+            body_world[body] = Gf.Matrix4d(cache.GetLocalToWorldTransform(link)).GetOrthonormalized()
         return body_world[body]
 
     for prim in Usd.PrimRange(root_prim, Usd.TraverseInstanceProxies()):

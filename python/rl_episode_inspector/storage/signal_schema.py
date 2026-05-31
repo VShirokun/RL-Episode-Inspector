@@ -87,10 +87,3 @@ class ViewerSpec(BaseModel):
     bodies: list[BodySpec] = Field(default_factory=list)
     markers: list[MarkerSpec] = Field(default_factory=list)
     up_axis: str = "z"
-    # How the articulation viewer orients each body's mesh:
-    #   "quaternion" — use the recorded body quaternion (correct when poses come
-    #                  straight from the sim, e.g. Franka/Cartpole).
-    #   "bone"       — orient each mesh's long axis along the bone to its child
-    #                  (robust when recorded orientations are in a different frame
-    #                  than the geometry, e.g. retargeted humanoid mocap).
-    orient_mode: str = "quaternion"

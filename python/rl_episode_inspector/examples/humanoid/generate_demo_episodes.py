@@ -2,13 +2,10 @@
 
 Offline + fast (no simulator): loads the ``.npz`` mocap clips, which carry the
 correct full-body world positions (a real standing/walking figure) plus per-body
-world rotations. We record the positions and the rotations, but the viewer is
-told ``orient_mode="bone"``: it orients each body's exact mesh so its long axis
-runs along the bone (toward the body's child joint). This is robust because the
-recorded rotations are in the PhysX body frame, which is rotated ~90° from the
-authored USD mesh frame the geometry is baked in — applying the raw quaternion
-would mis-rotate every limb. Bone orientation derives purely from the (correct)
-joint positions and reproduces the figure faithfully with the real geometry.
+world rotations in the PhysX body frame. The exact meshes are baked into that
+same link frame (``export_env_meshes --frame usd``), so the viewer applies the
+recorded quaternion directly — an exact replay of the reference motion with the
+real geometry.
 
 The exact meshes come from a one-time ``export_env_meshes --frame usd`` run on the
 AMP env (committed under sample_data/humanoid/assets/humanoid28). Runs under the
@@ -76,7 +73,6 @@ def main() -> None:
             episode_id_prefix="humanoid",
             viewer_type="articulation3d",
             up_axis="z",
-            orient_mode="bone",  # PhysX body frame != authored mesh frame; orient by bone
             signal_units={"root_height": "m", "forward_velocity": "m/s"},
             signal_descriptions={
                 "root_height": "Pelvis height above ground",
