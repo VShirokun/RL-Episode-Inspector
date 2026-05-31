@@ -60,50 +60,58 @@ export function ArticulationViewer() {
     if (upAxis === "z") root.rotation.x = -Math.PI / 2;
     scene.add(root);
 
+    // "models" => solid geometry (real meshes where available, else solid
+    // capsule limbs + joint spheres so a meshless robot like the MuJoCo humanoid
+    // — which is built from capsules in the sim — still looks like a real figure).
+    // "cubes" => lightweight boxes + thin bone lines.
+    const solid = renderMode === "models";
     const loader = new GLTFLoader();
-    // One group per body; child is a mesh (models) or a cube (fallback).
+    const jointMat = new THREE.MeshStandardMaterial({ color: 0x9fb3d1, metalness: 0.2, roughness: 0.6 });
+    const rootMat = new THREE.MeshStandardMaterial({ color: 0x8899aa, metalness: 0.2, roughness: 0.6 });
+    const limbMat = new THREE.MeshStandardMaterial({ color: 0x6f86b8, metalness: 0.15, roughness: 0.75 });
+
+    // One group per body; child is a real mesh, a solid joint sphere, or a cube.
     const bodyGroups = bodies.map((b, i) => {
       const g = new THREE.Group();
       root.add(g);
-      const addCube = () => {
-        g.add(
-          new THREE.Mesh(
-            new THREE.BoxGeometry(0.05, 0.05, 0.05),
-            new THREE.MeshStandardMaterial({
-              color: i === 0 ? 0x8899aa : 0x4f9dff,
-              metalness: 0.2,
-              roughness: 0.6,
-            }),
-          ),
-        );
+      const addBox = () => {
+        g.add(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.05),
+          new THREE.MeshStandardMaterial({ color: i === 0 ? 0x8899aa : 0x4f9dff, metalness: 0.2, roughness: 0.6 })));
         needsRender = true;
       };
-      if (renderMode === "models" && b.mesh) {
-        loader.load(
-          `/api/assets/${b.mesh}`,
-          (gltf) => {
-            g.add(gltf.scene);
-            needsRender = true;
-          },
-          undefined,
-          () => addCube(), // GLB missing/failed -> proxy cube
-        );
+      const addJoint = () => {
+        g.add(new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 16), b.parent < 0 ? rootMat : jointMat));
+        needsRender = true;
+      };
+      if (solid && b.mesh) {
+        loader.load(`/api/assets/${b.mesh}`, (gltf) => { g.add(gltf.scene); needsRender = true; },
+          undefined, () => addJoint()); // GLB missing/failed -> solid joint
+      } else if (solid) {
+        addJoint(); // meshless body in models mode -> solid joint sphere
       } else {
-        addCube();
+        addBox(); // cubes mode
       }
       return g;
     });
 
+    // Bones: solid capsule/cylinder limbs (models mode, meshless bodies) or thin
+    // lines (cubes mode). Meshed bodies (e.g. Franka) get no bone.
     const boneMat = new THREE.LineBasicMaterial({ color: 0x9fb3d1 });
-    const bones = bodies.map((b) => {
+    type Bone = { kind: "cyl"; obj: THREE.Mesh } | { kind: "line"; obj: THREE.Line } | null;
+    const bones: Bone[] = bodies.map((b) => {
       if (b.parent < 0) return null;
-      const geom = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(),
-        new THREE.Vector3(),
-      ]);
-      const line = new THREE.Line(geom, boneMat);
-      root.add(line);
-      return line;
+      if (solid && !b.mesh) {
+        const cyl = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1, 12), limbMat);
+        root.add(cyl);
+        return { kind: "cyl", obj: cyl };
+      }
+      if (!solid) {
+        const geom = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+        const line = new THREE.Line(geom, boneMat);
+        root.add(line);
+        return { kind: "line", obj: line };
+      }
+      return null;
     });
 
     const markerMeshes = markers.map((mk) => {
@@ -161,6 +169,8 @@ export function ArticulationViewer() {
     resize();
 
     const tmp = new THREE.Vector3();
+    const boneDir = new THREE.Vector3();
+    const UP = new THREE.Vector3(0, 1, 0); // CylinderGeometry axis
     const MIN_DRAW_MS = 1000 / 40; // cap GL draws at ~40 fps (eases software GL)
     let lastDraw = 0;
     let running = false;
@@ -183,14 +193,23 @@ export function ArticulationViewer() {
           g.quaternion.set(num(b.quat[1]), num(b.quat[2]), num(b.quat[3]), num(b.quat[0]));
         });
         bodies.forEach((b, i) => {
-          const line = bones[i];
-          if (!line || b.parent < 0) return;
-          const pos = line.geometry.attributes.position as THREE.BufferAttribute;
+          const bone = bones[i];
+          if (!bone || b.parent < 0) return;
           const c = bodyGroups[i].position;
           const p = bodyGroups[b.parent].position;
-          pos.setXYZ(0, c.x, c.y, c.z);
-          pos.setXYZ(1, p.x, p.y, p.z);
-          pos.needsUpdate = true;
+          if (bone.kind === "line") {
+            const pos = bone.obj.geometry.attributes.position as THREE.BufferAttribute;
+            pos.setXYZ(0, c.x, c.y, c.z);
+            pos.setXYZ(1, p.x, p.y, p.z);
+            pos.needsUpdate = true;
+          } else {
+            // orient/scale a unit (Y-axis) cylinder to span from body to parent
+            boneDir.subVectors(p, c);
+            const len = boneDir.length() || 1e-6;
+            bone.obj.position.copy(c).addScaledVector(boneDir, 0.5);
+            bone.obj.quaternion.setFromUnitVectors(UP, boneDir.normalize());
+            bone.obj.scale.set(1, len, 1);
+          }
         });
         markers.forEach((mk, i) => {
           tmp.set(num(mk.pos[0]), num(mk.pos[1]), num(mk.pos[2]));
