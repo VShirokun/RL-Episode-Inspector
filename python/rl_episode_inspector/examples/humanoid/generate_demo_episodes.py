@@ -79,7 +79,11 @@ def main() -> None:
                 "footstep": "Sparse: a foot just touched the ground",
             },
         )
-        recorder.register_bodies(body_names, parents)
+        # Reference the exact humanoid geometry exported once from the AMP env via
+        # `export_env_meshes --task Isaac-Humanoid-AMP-Walk-Direct-v0 --robot-key
+        # humanoid28` (this replay is offline mocap, so it can't export live).
+        meshes = [f"humanoid28/{name}.glb" for name in body_names]
+        recorder.register_bodies(body_names, parents, meshes=meshes)
         recorder.start_episode(episode_index=ep_index, global_step=0)
 
         prev_root: tuple[float, float, float] | None = None

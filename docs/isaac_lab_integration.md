@@ -112,24 +112,31 @@ A task adapter calls `recorder.register_bodies(names, parents)` once and passes
 a humanoid later). The Newton backend exposes body state as warp arrays (handled
 by `to_numpy`).
 
-### Real meshes (models vs cubes)
+### Exact geometry, exported automatically (models vs cubes)
 
-The viewer can render the **real robot meshes** (default) or lightweight cubes.
-Export per-body GLBs once from the robot's USD (standalone — no sim app needed):
+The viewer renders the robot's **exact sim geometry** (default "Models") or
+lightweight cubes. `examples/scene_geometry.py::export_articulation_meshes` walks
+the composed USD stage and reproduces **every** visual geom of every body —
+triangle `Mesh` *and* primitive shapes (`Capsule`, `Sphere`, `Cylinder`, `Cube`,
+`Cone`) — baked into each body's local frame, one GLB per body. No manual config.
 
-```bash
-isaaclab-env/bin/python -m rl_episode_inspector.examples.export_robot_meshes \
-  --usd-dir <ISAAC_ASSETS>/Robots/FrankaEmika/Props \
-  --bodies panda_link0,panda_link1,panda_link2,panda_link3,panda_link4,panda_link5,panda_link6,panda_link7,panda_hand,panda_leftfinger,panda_rightfinger \
-  --out-dir sample_data/reach/assets/franka
-```
+- **Live-env tasks** (e.g. Reach) call it automatically inside their generate
+  script, so recording the task also produces the meshes.
+- **Offline replays** (the humanoid mocap) export once via the generic runner:
+  ```bash
+  isaaclab-env/bin/python -m rl_episode_inspector.examples.export_env_meshes \
+    --task Isaac-Humanoid-AMP-Walk-Direct-v0 --out-dir sample_data/humanoid/assets \
+    --robot-key humanoid28
+  ```
 
-Then pass the mesh paths to the recorder: `register_bodies(names, parents,
-meshes=[f"franka/{n}.glb" for n in names])`. The backend serves them at
-`/api/assets/...`; the frontend "Models/Cubes" toggle switches modes, and any
-body without a mesh falls back to a cube. The exporter bakes each link's visual
-mesh into the link-local frame, so placing it at the recorded body pose
-reconstructs the robot.
+The backend serves GLBs at `/api/assets/...`; the "Models/Cubes" toggle switches
+modes, and a body with no mesh falls back to a solid capsule limb (or a cube).
+
+Gotcha handled: a body/link prim's xform may carry a **scale** (Franka links have
+a cm→m scale; the humanoid feet scale a unit `Cube`). Since `body_pos_w` is a
+rigid, scale-free frame, the exporter bakes geometry relative to the body's
+**orthonormalized** transform — otherwise the scale cancels and meshes bloat
+(Franka 100×, feet → 2 m).
 
 Gotchas specific to this task (learned during implementation):
 - The IK `body_offset` means the *controlled* point is the fingertip

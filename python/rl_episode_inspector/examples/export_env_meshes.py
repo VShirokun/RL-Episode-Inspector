@@ -1,0 +1,78 @@
+"""Auto-export exact robot geometry from any Isaac Lab task to GLB.
+
+Boots the task, finds the articulation, and writes one GLB per body containing
+its real visual geometry (meshes + primitive shapes), via
+``scene_geometry.export_articulation_meshes``. No manual configuration — point it
+at a task and it produces the meshes the viewer needs.
+
+    PYTHONPATH=$PWD/python /path/to/isaaclab-env/bin/python \
+        -m rl_episode_inspector.examples.export_env_meshes \
+        --task Isaac-Reach-Franka-IK-Abs-v0 --out-dir sample_data/reach/assets \
+        --robot-key franka
+"""
+
+from __future__ import annotations
+
+import argparse
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Export exact robot meshes from a task.")
+    parser.add_argument("--task", required=True)
+    parser.add_argument("--asset-name", default="robot", help="scene articulation key")
+    parser.add_argument("--out-dir", required=True)
+    parser.add_argument("--robot-key", required=True, help="subdir under out-dir, e.g. 'franka'")
+
+    from isaaclab.app import AppLauncher
+
+    AppLauncher.add_app_launcher_args(parser)
+    args = parser.parse_args()
+    args.headless = True
+    if args.enable_cameras is None:
+        args.enable_cameras = False
+
+    app_launcher = AppLauncher(args)
+    simulation_app = app_launcher.app
+
+    import gymnasium as gym
+    import isaaclab_tasks  # noqa: F401
+    import omni.usd
+    from isaaclab_tasks.utils import parse_env_cfg
+
+    from rl_episode_inspector.examples.scene_geometry import export_articulation_meshes
+
+    env = gym.make(args.task, cfg=parse_env_cfg(args.task, num_envs=1))
+    env.reset()
+    unwrapped = env.unwrapped
+    robot = unwrapped.scene[args.asset_name]
+    body_names = list(robot.body_names)
+
+    # robot prim path for env 0
+    root_path = None
+    try:
+        root_path = list(robot.root_physx_view.prim_paths)[0]
+    except Exception:  # noqa: BLE001
+        root_path = str(robot.cfg.prim_path).replace("env_.*", "env_0").replace(".*", "0")
+
+    stage = omni.usd.get_context().get_stage()
+    diag: list[str] = []
+    meshes = export_articulation_meshes(
+        stage, root_path, body_names, args.out_dir, args.robot_key, diag=diag
+    )
+
+    with open("/tmp/rlei_mesh_export.txt", "w") as fh:
+        fh.write(f"task={args.task} root={root_path}\n")
+        fh.write(f"bodies={body_names}\n")
+        fh.write(f"exported {len(meshes)}/{len(body_names)} bodies:\n")
+        for b in body_names:
+            fh.write(f"  {b}: {meshes.get(b, 'NO GEOMETRY')}\n")
+        fh.write("DIAGNOSTICS:\n")
+        for d in diag:
+            fh.write(f"  {d}\n")
+
+    env.close()
+    simulation_app.close()
+
+
+if __name__ == "__main__":
+    main()

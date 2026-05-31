@@ -1092,7 +1092,7 @@
           "pose_pelvis_qy",
           "pose_pelvis_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/pelvis.glb"
       },
       {
         "name": "torso",
@@ -1108,7 +1108,7 @@
           "pose_torso_qy",
           "pose_torso_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/torso.glb"
       },
       {
         "name": "head",
@@ -1124,7 +1124,7 @@
           "pose_head_qy",
           "pose_head_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/head.glb"
       },
       {
         "name": "right_upper_arm",
@@ -1140,7 +1140,7 @@
           "pose_right_upper_arm_qy",
           "pose_right_upper_arm_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/right_upper_arm.glb"
       },
       {
         "name": "right_lower_arm",
@@ -1156,7 +1156,7 @@
           "pose_right_lower_arm_qy",
           "pose_right_lower_arm_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/right_lower_arm.glb"
       },
       {
         "name": "right_hand",
@@ -1172,7 +1172,7 @@
           "pose_right_hand_qy",
           "pose_right_hand_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/right_hand.glb"
       },
       {
         "name": "left_upper_arm",
@@ -1188,7 +1188,7 @@
           "pose_left_upper_arm_qy",
           "pose_left_upper_arm_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/left_upper_arm.glb"
       },
       {
         "name": "left_lower_arm",
@@ -1204,7 +1204,7 @@
           "pose_left_lower_arm_qy",
           "pose_left_lower_arm_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/left_lower_arm.glb"
       },
       {
         "name": "left_hand",
@@ -1220,7 +1220,7 @@
           "pose_left_hand_qy",
           "pose_left_hand_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/left_hand.glb"
       },
       {
         "name": "right_thigh",
@@ -1236,7 +1236,7 @@
           "pose_right_thigh_qy",
           "pose_right_thigh_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/right_thigh.glb"
       },
       {
         "name": "right_shin",
@@ -1252,7 +1252,7 @@
           "pose_right_shin_qy",
           "pose_right_shin_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/right_shin.glb"
       },
       {
         "name": "right_foot",
@@ -1268,7 +1268,7 @@
           "pose_right_foot_qy",
           "pose_right_foot_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/right_foot.glb"
       },
       {
         "name": "left_thigh",
@@ -1284,7 +1284,7 @@
           "pose_left_thigh_qy",
           "pose_left_thigh_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/left_thigh.glb"
       },
       {
         "name": "left_shin",
@@ -1300,7 +1300,7 @@
           "pose_left_shin_qy",
           "pose_left_shin_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/left_shin.glb"
       },
       {
         "name": "left_foot",
@@ -1316,7 +1316,7 @@
           "pose_left_foot_qy",
           "pose_left_foot_qz"
         ],
-        "mesh": null
+        "mesh": "humanoid28/left_foot.glb"
       }
     ],
     "markers": [],

@@ -144,7 +144,7 @@ export function ArticulationViewer() {
         const radius = Math.max(0.4, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2);
         const tx = cx, ty = cz, tz = -cy; // sim (z-up) -> three (y-up)
         controls.target.set(tx, ty, tz);
-        const d = radius * 2.2;
+        const d = radius * 3.5; // pull back enough to clear the robot's own meshes
         camera.position.set(tx + d * 0.7, ty + d * 0.6, tz + d * 0.7);
         camera.near = Math.max(0.01, d * 0.01);
         camera.far = d * 30;

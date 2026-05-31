@@ -101,10 +101,12 @@ meshes)` + `record_frame(poses={body: (px,py,pz,qw,qx,qy,qz)})`.
 Each body may also carry `"mesh"`: a GLB path **relative to the assets dir** the
 backend serves at `GET /api/assets/<path>` (e.g. `"franka/panda_link0.glb"`). The
 viewer's **"models"** mode (default) loads these and renders the real robot; the
-**"cubes"** mode (or a missing/failed mesh) draws lightweight proxy boxes — so
-users low on space can skip shipping meshes. Meshes are exported once per robot
-from USD with `examples/export_robot_meshes.py` and live under
+**"cubes"** mode (or a missing/failed mesh) draws a lightweight proxy (capsule
+limb or box) — so users low on space can skip shipping meshes. Meshes are
+exported automatically from the sim's exact geometry by
+`examples/scene_geometry.py` (meshes + primitive shapes) and live under
 `<episodes_dir>/../assets` (overridable via `--assets-dir` / `RLEI_ASSETS_DIR`).
+See docs/isaac_lab_integration.md.
 
 ## Reward naming convention
 

@@ -47,6 +47,7 @@ def main() -> None:
     import gymnasium as gym
     import isaaclab_tasks  # noqa: F401
     import numpy as np
+    import omni.usd
     import torch
     from isaaclab_tasks.utils import parse_env_cfg
 
@@ -63,6 +64,7 @@ def main() -> None:
         approach,
         distance,
     )
+    from rl_episode_inspector.examples.scene_geometry import export_articulation_meshes
     from rl_episode_inspector.recorder import EpisodeRecorder
     from rl_episode_inspector.storage import MarkerSpec
 
@@ -143,9 +145,20 @@ def main() -> None:
             "targets_reached": "Cumulative number of targets reached",
         },
     )
-    # Per-body GLB meshes exported by export_robot_meshes.py (served at
-    # /assets/franka/<body>.glb). The viewer falls back to cubes if absent.
-    body_meshes = [f"franka/{name}.glb" for name in body_names]
+    # Automatically export the robot's EXACT visual geometry (meshes/primitives)
+    # to the assets dir the backend serves, and wire each body's mesh path. No
+    # manual step: recording the task produces the meshes too.
+    from pathlib import Path
+
+    assets_dir = Path(args.output_dir).parent / "assets"
+    try:
+        root_path = list(robot.root_physx_view.prim_paths)[0]
+    except Exception:  # noqa: BLE001
+        root_path = str(robot.cfg.prim_path).replace("env_.*", "env_0").replace(".*", "0")
+    mesh_map = export_articulation_meshes(
+        omni.usd.get_context().get_stage(), root_path, body_names, assets_dir, "franka"
+    )
+    body_meshes = [mesh_map.get(name) for name in body_names]
     recorder.register_bodies(body_names, body_parents, meshes=body_meshes)
 
     rng = np.random.default_rng(args.seed)
