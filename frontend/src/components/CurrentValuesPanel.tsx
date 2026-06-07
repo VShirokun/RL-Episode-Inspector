@@ -8,7 +8,10 @@ export function CurrentValuesPanel() {
   if (!loaded) return null;
   const frame = Math.round(currentFrame);
 
-  const states = loaded.metadata.signals.filter((s) => s.kind === "state" || s.kind === "action");
+  // Live readout of every tracked scalar: state, action, and any custom
+  // observation/debug variables (e.g. ball_spin) — plus the per-frame reward.
+  const tracked = ["state", "action", "observation", "debug"];
+  const states = loaded.metadata.signals.filter((s) => tracked.includes(s.kind));
   const total = columnValue(loaded, "reward_step_total", frame);
   const cumulative = columnValue(loaded, "reward_cumulative", frame);
 
