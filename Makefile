@@ -49,6 +49,11 @@ generate-reach-demo: ## Generate REAL Isaac Lab Franka Reach episodes (sparse re
 	$(ISAACLAB)/isaaclab.sh -p python/rl_episode_inspector/examples/reach/generate_demo_episodes.py \
 		--output-dir sample_data/reach/episodes --num-episodes 8 --seed 42 --episode-length 25
 
+.PHONY: generate-cartdp-demo
+generate-cartdp-demo: ## Generate REAL Isaac Lab Cart-Double-Pendulum MARL episodes (per-agent rewards; needs Isaac Lab)
+	$(ISAACLAB)/isaaclab.sh -p python/rl_episode_inspector/examples/cart_double_pendulum/generate_demo_episodes.py \
+		--output-dir sample_data/cart_double_pendulum/episodes --num-episodes 6 --seed 0
+
 # ---- servers ----
 .PHONY: backend-dev
 backend-dev: ## Run the backend API on :8000 (serves the real Franka Reach experiment by default)

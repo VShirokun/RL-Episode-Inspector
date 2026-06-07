@@ -1,0 +1,341 @@
+{
+  "schema_version": "0.1.0",
+  "episode_id": "cartdp_000002",
+  "run_id": "marl_cartdp_seed0",
+  "task_name": "CartDoublePendulum",
+  "task_source": "isaac_lab",
+  "env_id": 0,
+  "episode_index": 2,
+  "created_at": "2026-06-07T22:21:34Z",
+  "num_frames": 300,
+  "dt": 0.016666666666666666,
+  "fps": 60.0,
+  "duration_seconds": 5.0,
+  "global_step_start": 300,
+  "global_step_end": 599,
+  "terminated": false,
+  "truncated": true,
+  "reset_reason": "time_limit",
+  "episode_return": -64.94755148791893,
+  "agents": [
+    {
+      "id": "cart",
+      "label": "Cart",
+      "team": null
+    },
+    {
+      "id": "pendulum",
+      "label": "Pendulum",
+      "team": null
+    }
+  ],
+  "agent_returns": {
+    "cart": 153.81921657872275,
+    "pendulum": -218.76676806664167
+  },
+  "policy_checkpoint": null,
+  "seed": null,
+  "signals": [
+    {
+      "name": "cart_pos",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": null,
+      "agent": null,
+      "display": null
+    },
+    {
+      "name": "pole_angle",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "rad",
+      "description": "First pole angle (normalized)",
+      "agent": null,
+      "display": null
+    },
+    {
+      "name": "pendulum_angle",
+      "kind": "state",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "rad",
+      "description": "Second pendulum angle (normalized)",
+      "agent": null,
+      "display": null
+    },
+    {
+      "name": "cart_action",
+      "kind": "action",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": null,
+      "display": null
+    },
+    {
+      "name": "pendulum_action",
+      "kind": "action",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": null,
+      "display": null
+    },
+    {
+      "name": "reward_cart_alive_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_alive_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_terminated_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_terminated_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_pole_pos_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_pole_pos_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_cart_vel_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_cart_vel_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_pole_vel_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_pole_vel_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_step_total",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_cart_cumulative",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "cart",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_alive_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_alive_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_terminated_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_terminated_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_pendulum_pos_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_pendulum_pos_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_pendulum_vel_raw",
+      "kind": "reward_raw",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_pendulum_vel_weighted",
+      "kind": "reward_weighted",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_step_total",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_pendulum_cumulative",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": "pendulum",
+      "display": null
+    },
+    {
+      "name": "reward_step_total",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": null,
+      "display": null
+    },
+    {
+      "name": "reward_cumulative",
+      "kind": "reward_total",
+      "dtype": "float32",
+      "shape": [],
+      "unit": null,
+      "description": null,
+      "agent": null,
+      "display": null
+    }
+  ],
+  "viewer": {
+    "type": "cartpole",
+    "state_mapping": {
+      "cart_position": "cart_pos",
+      "pole_angle": "pole_angle"
+    },
+    "bodies": [],
+    "markers": [],
+    "lights": [],
+    "up_axis": "z"
+  }
+}
