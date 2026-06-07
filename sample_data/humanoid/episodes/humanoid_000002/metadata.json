@@ -6,7 +6,7 @@
   "task_source": "amp_motion",
   "env_id": 0,
   "episode_index": 2,
-  "created_at": "2026-06-07T20:08:04Z",
+  "created_at": "2026-06-07T23:15:40Z",
   "num_frames": 82,
   "dt": 0.016666666666666666,
   "fps": 60.0,
@@ -17,6 +17,8 @@
   "truncated": true,
   "reset_reason": "motion_end",
   "episode_return": 409.9678863286972,
+  "agents": [],
+  "agent_returns": {},
   "policy_checkpoint": null,
   "seed": null,
   "signals": [
@@ -27,6 +29,7 @@
       "shape": [],
       "unit": "m",
       "description": "Pelvis height above ground",
+      "agent": null,
       "display": null
     },
     {
@@ -36,6 +39,27 @@
       "shape": [],
       "unit": "m/s",
       "description": "Pelvis forward (x) velocity",
+      "agent": null,
+      "display": null
+    },
+    {
+      "name": "pelvis_lateral",
+      "kind": "observation",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": "Pelvis lateral (y) position",
+      "agent": null,
+      "display": null
+    },
+    {
+      "name": "feet_distance",
+      "kind": "observation",
+      "dtype": "float32",
+      "shape": [],
+      "unit": "m",
+      "description": "Horizontal distance between the two feet",
+      "agent": null,
       "display": null
     },
     {
@@ -45,6 +69,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -54,6 +79,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -63,6 +89,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -72,6 +99,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -81,6 +109,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -90,6 +119,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -99,6 +129,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -108,6 +139,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -117,6 +149,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -126,6 +159,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -135,6 +169,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -144,6 +179,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -153,6 +189,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -162,6 +199,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -171,6 +209,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -180,6 +219,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -189,6 +229,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -198,6 +239,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -207,6 +249,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -216,6 +259,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -225,6 +269,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -234,6 +279,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -243,6 +289,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -252,6 +299,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -261,6 +309,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -270,6 +319,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -279,6 +329,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -288,6 +339,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -297,6 +349,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -306,6 +359,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -315,6 +369,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -324,6 +379,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -333,6 +389,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -342,6 +399,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -351,6 +409,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -360,6 +419,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -369,6 +429,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -378,6 +439,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -387,6 +449,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -396,6 +459,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -405,6 +469,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -414,6 +479,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -423,6 +489,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -432,6 +499,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -441,6 +509,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -450,6 +519,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -459,6 +529,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -468,6 +539,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -477,6 +549,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -486,6 +559,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -495,6 +569,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -504,6 +579,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -513,6 +589,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -522,6 +599,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -531,6 +609,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -540,6 +619,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -549,6 +629,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -558,6 +639,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -567,6 +649,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -576,6 +659,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -585,6 +669,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -594,6 +679,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -603,6 +689,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -612,6 +699,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -621,6 +709,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -630,6 +719,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -639,6 +729,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -648,6 +739,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -657,6 +749,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -666,6 +759,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -675,6 +769,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -684,6 +779,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -693,6 +789,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -702,6 +799,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -711,6 +809,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -720,6 +819,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -729,6 +829,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -738,6 +839,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -747,6 +849,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -756,6 +859,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -765,6 +869,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -774,6 +879,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -783,6 +889,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -792,6 +899,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -801,6 +909,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -810,6 +919,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -819,6 +929,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -828,6 +939,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -837,6 +949,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -846,6 +959,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -855,6 +969,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -864,6 +979,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -873,6 +989,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -882,6 +999,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -891,6 +1009,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -900,6 +1019,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -909,6 +1029,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -918,6 +1039,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -927,6 +1049,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -936,6 +1059,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -945,6 +1069,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -954,6 +1079,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -963,6 +1089,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -972,6 +1099,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -981,6 +1109,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -990,6 +1119,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -999,6 +1129,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -1008,6 +1139,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -1017,6 +1149,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -1026,6 +1159,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -1035,6 +1169,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -1044,6 +1179,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -1053,6 +1189,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -1062,6 +1199,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     },
     {
@@ -1071,6 +1209,7 @@
       "shape": [],
       "unit": null,
       "description": null,
+      "agent": null,
       "display": null
     }
   ],

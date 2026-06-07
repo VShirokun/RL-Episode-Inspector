@@ -92,11 +92,18 @@ def main() -> None:
             viewer_type="articulation3d",
             up_axis="z",
             lights=lights,
-            signal_units={"root_height": "m", "forward_velocity": "m/s"},
+            signal_units={
+                "root_height": "m", "forward_velocity": "m/s",
+                "feet_distance": "m", "pelvis_lateral": "m",
+            },
             signal_descriptions={
                 "root_height": "Pelvis height above ground",
                 "forward_velocity": "Pelvis forward (x) velocity",
                 "footstep": "Sparse: a foot just touched the ground",
+                # Example of tracking arbitrary variables via record_frame's
+                # generic `observations` channel (where a ball-spin signal goes).
+                "feet_distance": "Horizontal distance between the two feet",
+                "pelvis_lateral": "Pelvis lateral (y) position",
             },
         )
         recorder.register_bodies(
@@ -129,6 +136,13 @@ def main() -> None:
                 qw, qx, qy, qz = (float(v) for v in rotations[f, b])
                 poses[name] = (px, py, pz, qw, qx, qy, qz)
 
+            # Arbitrary tracked variables go in `observations` — no schema needed;
+            # they appear automatically in the UI's Signals panel + values panel.
+            observations = {"pelvis_lateral": root[1]}
+            if len(foot_idx) == 2:
+                rf, lf = positions[f, foot_idx[0]], positions[f, foot_idx[1]]
+                observations["feet_distance"] = float(np.hypot(rf[0] - lf[0], rf[1] - lf[1]))
+
             recorder.record_frame(
                 frame_index=f,
                 timestamp=f * dt,
@@ -139,6 +153,7 @@ def main() -> None:
                 terminated=False,
                 truncated=(f == n_frames - 1),
                 poses=poses,
+                observations=observations,
             )
         episode_id = recorder.end_episode(reset_reason="motion_end")
         if episode_id:

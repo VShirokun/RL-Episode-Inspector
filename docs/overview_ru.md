@@ -80,6 +80,24 @@ pose_<body>_{px,py,pz,qw,qx,qy,qz}   # позиция + кватернион (п
 Всё нефинитное (NaN/inf) отбрасывается с ошибкой (`_finite`). Адаптер задачи
 отвечает за извлечение значений из своего окружения.
 
+### Трекинг любой своей переменной (например, спин мяча)
+Никакой схемы объявлять не нужно — у `record_frame` есть generic-каналы, и сигнал
+выводится из ключа:
+- `state=...` / `action=...` — состояние и действия;
+- `observations={...}` — что угодно «наблюдаемое о мире» (kind `observation`);
+- `debug={...}` — диагностика / произвольные значения (kind `debug`).
+
+```python
+recorder.record_frame(..., observations={"ball_spin": 12.3, "ball_speed": 4.5})
+```
+
+Переменная **сразу** появляется в UI: в панели **Signals** (вкладки
+Actions/Observations/State/Debug/Events показываются только для присутствующих
+типов) и в живой панели **Current frame**. Единицы/описания добавляются по имени
+через `signal_units` / `signal_descriptions` рекордера. Правило одно: если пишешь
+ключ — пиши его на каждом кадре (как `state`). Пример в офлайн-демо гуманоида:
+`observations={"feet_distance": ..., "pelvis_lateral": ...}`.
+
 ## 5. Backend — FastAPI (`server/`)
 
 Эндпоинты (`server/routes.py`):
