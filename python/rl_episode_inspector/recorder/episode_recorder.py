@@ -147,9 +147,15 @@ class EpisodeRecorder:
         self._truncated: list[bool] = []
         self._state: dict[str, list[float]] = {}
         self._action: dict[str, list[float]] = {}
+        # Free-form channels for tracking ANY extra variable (e.g. ball_spin):
+        # observations (kind "observation") and debug (kind "debug").
+        self._observation: dict[str, list[float]] = {}
+        self._debug: dict[str, list[float]] = {}
         self._poses: dict[str, list[float]] = {}  # pose column -> per-frame values
         self._state_keys: list[str] | None = None
         self._action_keys: list[str] | None = None
+        self._observation_keys: list[str] | None = None
+        self._debug_keys: list[str] | None = None
 
     def start_episode(
         self, episode_index: int, global_step: int = 0, seed: int | None = None
@@ -175,8 +181,22 @@ class EpisodeRecorder:
         poses: Mapping[str, Sequence[float]] | None = None,
         rewards_by_agent: Mapping[str, Mapping[str, float]] | None = None,
         reward_weights_by_agent: Mapping[str, Mapping[str, float]] | None = None,
+        observations: Mapping[str, float] | None = None,
+        debug: Mapping[str, float] | None = None,
     ) -> None:
         """Record one frame.
+
+        Besides ``state``/``action``/rewards, you can track ANY extra scalar
+        variable via two free-form channels — no schema to declare:
+
+        * ``observations`` — things observed about the world (kind ``observation``)
+        * ``debug`` — diagnostics / arbitrary tracked values (kind ``debug``)
+
+        e.g. ``record_frame(..., observations={"ball_spin": 12.3})``. The signal
+        is inferred from the key and shows up automatically in the UI's Signals
+        panel (and the live values panel). Annotate units/descriptions via the
+        recorder's ``signal_units`` / ``signal_descriptions``. If you record a key
+        on one frame you must record it on every frame (like ``state``).
 
         Single-agent: pass ``rewards_raw`` + ``reward_weights`` (one term set).
         Multi-agent: pass ``rewards_by_agent`` + ``reward_weights_by_agent``,
@@ -186,21 +206,33 @@ class EpisodeRecorder:
         if not self._active:
             raise RecorderError("record_frame called before start_episode")
 
-        self._check_keys("state", state, "_state_keys")
-        self._check_keys("action", action, "_action_keys")
-
         self._frame_index.append(int(frame_index))
         self._timestamp.append(_finite(timestamp, "timestamp"))
         self._terminated.append(bool(terminated))
         self._truncated.append(bool(truncated))
 
-        for key, value in state.items():
-            self._state.setdefault(key, []).append(_finite(value, f"state[{key}]"))
-        for key, value in action.items():
-            self._action.setdefault(key, []).append(_finite(value, f"action[{key}]"))
+        self._record_channel("state", state, self._state, "_state_keys")
+        self._record_channel("action", action, self._action, "_action_keys")
+        self._record_channel("observation", observations, self._observation, "_observation_keys")
+        self._record_channel("debug", debug, self._debug, "_debug_keys")
         self._record_poses(poses)
 
         self._record_rewards(rewards_raw, reward_weights, rewards_by_agent, reward_weights_by_agent)
+
+    def _record_channel(
+        self,
+        what: str,
+        values: Mapping[str, float] | None,
+        store: dict[str, list[float]],
+        attr: str,
+    ) -> None:
+        """Append one frame's values for a named scalar channel (finite-checked,
+        key-set kept stable across frames)."""
+        if values is None:
+            return
+        self._check_keys(what, dict(values), attr)
+        for key, value in values.items():
+            store.setdefault(key, []).append(_finite(value, f"{what}[{key}]"))
 
     def _record_rewards(
         self,
@@ -342,10 +374,9 @@ class EpisodeRecorder:
             "truncated": truncated,
             "done": terminated | truncated,
         }
-        for key, vals in self._state.items():
-            columns[key] = np.asarray(vals, dtype=np.float32)
-        for key, vals in self._action.items():
-            columns[key] = np.asarray(vals, dtype=np.float32)
+        for channel in (self._state, self._action, self._observation, self._debug):
+            for key, vals in channel.items():
+                columns[key] = np.asarray(vals, dtype=np.float32)
         for agent, buf in self._rewards.items():
             for name, vals in buf.column_dict(agent).items():
                 columns[name] = np.asarray(vals, dtype=np.float32)
@@ -389,6 +420,10 @@ class EpisodeRecorder:
             signals.append(spec(key, SignalKind.state))
         for key in self._action:
             signals.append(spec(key, SignalKind.action))
+        for key in self._observation:
+            signals.append(spec(key, SignalKind.observation))
+        for key in self._debug:
+            signals.append(spec(key, SignalKind.debug))
         for agent, buf in self._rewards.items():
             pre = f"{agent}_" if agent else ""
             for name in buf.term_names:
