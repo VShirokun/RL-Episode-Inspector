@@ -65,14 +65,21 @@ class RewardBuffer:
         self.cumulative.append(self._cumulative)
         return step_total
 
-    def column_dict(self) -> dict[str, list[float]]:
-        """Return all reward columns under their canonical names."""
+    def column_dict(self, agent: str | None = None) -> dict[str, list[float]]:
+        """Return all reward columns under their canonical names.
+
+        ``agent`` namespaces the columns for a multi-agent episode, e.g.
+        ``reward_cart_alive_raw`` / ``reward_cart_step_total``. ``None`` keeps the
+        single-agent names (``reward_alive_raw`` / ``reward_step_total``) byte for
+        byte, so single-agent episodes are unchanged.
+        """
+        pre = f"{agent}_" if agent else ""
         out: dict[str, list[float]] = {}
         for name in self.raw:
-            out[f"reward_{name}_raw"] = self.raw[name]
-            out[f"reward_{name}_weighted"] = self.weighted[name]
-        out["reward_step_total"] = self.step_total
-        out["reward_cumulative"] = self.cumulative
+            out[f"reward_{pre}{name}_raw"] = self.raw[name]
+            out[f"reward_{pre}{name}_weighted"] = self.weighted[name]
+        out[f"reward_{pre}step_total"] = self.step_total
+        out[f"reward_{pre}cumulative"] = self.cumulative
         return out
 
     @property

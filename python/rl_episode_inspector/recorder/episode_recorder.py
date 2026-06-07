@@ -16,6 +16,7 @@ from pathlib import Path
 import numpy as np
 
 from ..storage import (
+    AgentSpec,
     BodySpec,
     EpisodeMetadata,
     EpisodeStore,
@@ -70,6 +71,7 @@ class EpisodeRecorder:
         signal_descriptions: dict[str, str] | None = None,
         markers: list[MarkerSpec] | None = None,
         lights: list[LightSpec] | None = None,
+        agents: list[AgentSpec] | None = None,
         up_axis: str = "z",
         max_saved_episodes: int | None = None,
     ) -> None:
@@ -87,6 +89,7 @@ class EpisodeRecorder:
         self.signal_descriptions = dict(signal_descriptions or {})
         self.markers = list(markers or [])
         self.lights = list(lights or [])
+        self.agents = list(agents or [])
         self.up_axis = up_axis
         self.max_saved_episodes = max_saved_episodes
 
@@ -135,7 +138,9 @@ class EpisodeRecorder:
         self._episode_index = 0
         self._global_step_start = 0
         self._seed: int | None = None
-        self._rewards = RewardBuffer()
+        # agent id -> reward buffer. Single-agent episodes use the lone key None
+        # (canonical column names, unchanged); multi-agent episodes key by agent.
+        self._rewards: dict[str | None, RewardBuffer] = {}
         self._frame_index: list[int] = []
         self._timestamp: list[float] = []
         self._terminated: list[bool] = []
@@ -163,12 +168,21 @@ class EpisodeRecorder:
         timestamp: float,
         state: dict[str, float],
         action: dict[str, float],
-        rewards_raw: dict[str, float],
-        reward_weights: dict[str, float],
-        terminated: bool,
-        truncated: bool,
+        rewards_raw: dict[str, float] | None = None,
+        reward_weights: dict[str, float] | None = None,
+        terminated: bool = False,
+        truncated: bool = False,
         poses: Mapping[str, Sequence[float]] | None = None,
+        rewards_by_agent: Mapping[str, Mapping[str, float]] | None = None,
+        reward_weights_by_agent: Mapping[str, Mapping[str, float]] | None = None,
     ) -> None:
+        """Record one frame.
+
+        Single-agent: pass ``rewards_raw`` + ``reward_weights`` (one term set).
+        Multi-agent: pass ``rewards_by_agent`` + ``reward_weights_by_agent``,
+        each a ``{agent_id: {term: value}}`` mapping (each agent may have its own
+        term set). Mixing the two within an episode is not allowed.
+        """
         if not self._active:
             raise RecorderError("record_frame called before start_episode")
 
@@ -186,7 +200,29 @@ class EpisodeRecorder:
             self._action.setdefault(key, []).append(_finite(value, f"action[{key}]"))
         self._record_poses(poses)
 
-        self._rewards.add_frame(rewards_raw, reward_weights)
+        self._record_rewards(rewards_raw, reward_weights, rewards_by_agent, reward_weights_by_agent)
+
+    def _record_rewards(
+        self,
+        rewards_raw: dict[str, float] | None,
+        reward_weights: dict[str, float] | None,
+        rewards_by_agent: Mapping[str, Mapping[str, float]] | None,
+        reward_weights_by_agent: Mapping[str, Mapping[str, float]] | None,
+    ) -> None:
+        if rewards_by_agent is not None:
+            if None in self._rewards:
+                raise RecorderError("cannot mix single-agent and per-agent rewards in one episode")
+            weights = reward_weights_by_agent or {}
+            for agent, terms in rewards_by_agent.items():
+                self._rewards.setdefault(agent, RewardBuffer()).add_frame(
+                    dict(terms), dict(weights.get(agent, {}))
+                )
+        else:
+            if any(a is not None for a in self._rewards):
+                raise RecorderError("cannot mix single-agent and per-agent rewards in one episode")
+            self._rewards.setdefault(None, RewardBuffer()).add_frame(
+                rewards_raw or {}, reward_weights or {}
+            )
 
     def _record_poses(self, poses: Mapping[str, Sequence[float]] | None) -> None:
         if not poses:
@@ -235,6 +271,18 @@ class EpisodeRecorder:
         signals = self._build_signals()
         episode_id = f"{self.episode_id_prefix}_{self._episode_index:06d}"
 
+        agent_returns = {
+            aid: float(buf.cumulative_return)
+            for aid, buf in self._rewards.items()
+            if aid is not None
+        }
+        # Multi-agent return is the team sum; single-agent is the lone buffer.
+        episode_return = (
+            sum(agent_returns.values())
+            if agent_returns
+            else float(self._rewards[None].cumulative_return)
+        )
+
         metadata = EpisodeMetadata(
             episode_id=episode_id,
             run_id=self.run_id,
@@ -252,7 +300,9 @@ class EpisodeRecorder:
             terminated=terminated,
             truncated=truncated,
             reset_reason=reset_reason,
-            episode_return=float(self._rewards.cumulative_return),
+            episode_return=float(episode_return),
+            agents=self.agents,
+            agent_returns=agent_returns,
             seed=self._seed,
             signals=signals,
             viewer=ViewerSpec(
@@ -296,8 +346,17 @@ class EpisodeRecorder:
             columns[key] = np.asarray(vals, dtype=np.float32)
         for key, vals in self._action.items():
             columns[key] = np.asarray(vals, dtype=np.float32)
-        for name, vals in self._rewards.column_dict().items():
-            columns[name] = np.asarray(vals, dtype=np.float32)
+        for agent, buf in self._rewards.items():
+            for name, vals in buf.column_dict(agent).items():
+                columns[name] = np.asarray(vals, dtype=np.float32)
+        if self._multi_agent:
+            # Team totals (sum across agents): keeps reward_step_total /
+            # reward_cumulative meaningful for the UI and episode-level ranking.
+            step_total = np.sum(
+                [buf.step_total for buf in self._rewards.values()], axis=0
+            ).astype(np.float32)
+            columns["reward_step_total"] = step_total
+            columns["reward_cumulative"] = np.cumsum(step_total).astype(np.float32)
         for name, vals in self._poses.items():
             columns[name] = np.asarray(vals, dtype=np.float32)
         # Defensive: ensure all columns are the right length.
@@ -306,10 +365,16 @@ class EpisodeRecorder:
                 raise RecorderError(f"Column {name!r} has length {len(arr)}, expected {n}")
         return columns
 
+    @property
+    def _multi_agent(self) -> bool:
+        return any(a is not None for a in self._rewards)
+
     def _build_signals(self) -> list[SignalSpec]:
         signals: list[SignalSpec] = []
 
-        def spec(name: str, kind: SignalKind, unit: str | None = None) -> SignalSpec:
+        def spec(
+            name: str, kind: SignalKind, unit: str | None = None, agent: str | None = None
+        ) -> SignalSpec:
             return SignalSpec(
                 name=name,
                 kind=kind,
@@ -317,17 +382,26 @@ class EpisodeRecorder:
                 shape=[],
                 unit=self.signal_units.get(name, unit),
                 description=self.signal_descriptions.get(name),
+                agent=agent,
             )
 
         for key in self._state:
             signals.append(spec(key, SignalKind.state))
         for key in self._action:
             signals.append(spec(key, SignalKind.action))
-        for name in self._rewards.term_names:
-            signals.append(spec(f"reward_{name}_raw", SignalKind.reward_raw))
-            signals.append(spec(f"reward_{name}_weighted", SignalKind.reward_weighted))
-        signals.append(spec("reward_step_total", SignalKind.reward_total))
-        signals.append(spec("reward_cumulative", SignalKind.reward_total))
+        for agent, buf in self._rewards.items():
+            pre = f"{agent}_" if agent else ""
+            for name in buf.term_names:
+                signals.append(spec(f"reward_{pre}{name}_raw", SignalKind.reward_raw, agent=agent))
+                signals.append(
+                    spec(f"reward_{pre}{name}_weighted", SignalKind.reward_weighted, agent=agent)
+                )
+            signals.append(spec(f"reward_{pre}step_total", SignalKind.reward_total, agent=agent))
+            signals.append(spec(f"reward_{pre}cumulative", SignalKind.reward_total, agent=agent))
+        if self._multi_agent:
+            # Team totals (agent=None) summed across agents.
+            signals.append(spec("reward_step_total", SignalKind.reward_total))
+            signals.append(spec("reward_cumulative", SignalKind.reward_total))
         for col in self._poses:
             signals.append(spec(col, SignalKind.pose))
         return signals

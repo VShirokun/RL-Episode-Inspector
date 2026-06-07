@@ -37,11 +37,28 @@ class SignalSpec(BaseModel):
     shape: list[int] = Field(default_factory=list)
     unit: str | None = None
     description: str | None = None
+    # Which agent this signal belongs to in a multi-agent episode (matches an
+    # ``AgentSpec.id``). ``None`` = single-agent or a shared/team signal. The UI
+    # groups reward signals by this so each agent gets its own reward panels.
+    agent: str | None = None
     # Optional UI hints (color, group, default-visible, ...). Kept free-form on
     # purpose so the frontend can evolve without a schema migration.
     display: dict | None = None
 
     model_config = {"use_enum_values": True}
+
+
+class AgentSpec(BaseModel):
+    """One agent of a multi-agent episode (e.g. Isaac ``DirectMARLEnv``).
+
+    ``id`` matches ``SignalSpec.agent`` on that agent's signals. ``team`` groups
+    cooperating/competing agents (optional). Single-agent episodes carry no
+    ``AgentSpec``s at all, so nothing about them changes.
+    """
+
+    id: str
+    label: str | None = None
+    team: str | None = None
 
 
 class BodySpec(BaseModel):

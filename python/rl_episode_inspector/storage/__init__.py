@@ -9,7 +9,15 @@ from .schemas import (
     EpisodeMetadata,
     EpisodeSummary,
 )
-from .signal_schema import BodySpec, LightSpec, MarkerSpec, SignalKind, SignalSpec, ViewerSpec
+from .signal_schema import (
+    AgentSpec,
+    BodySpec,
+    LightSpec,
+    MarkerSpec,
+    SignalKind,
+    SignalSpec,
+    ViewerSpec,
+)
 from .validation import EpisodeValidationError, validate_episode
 
 __all__ = [
@@ -23,6 +31,7 @@ __all__ = [
     "BodySpec",
     "MarkerSpec",
     "LightSpec",
+    "AgentSpec",
     "EpisodeValidationError",
     "validate_episode",
     "REQUIRED_FRAME_COLUMNS",

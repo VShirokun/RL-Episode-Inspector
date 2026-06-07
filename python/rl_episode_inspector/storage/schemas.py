@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, Field
 
-from .signal_schema import SignalSpec, ViewerSpec
+from .signal_schema import AgentSpec, SignalSpec, ViewerSpec
 
 SCHEMA_VERSION = "0.1.0"
 
@@ -52,6 +52,12 @@ class EpisodeMetadata(BaseModel):
 
     episode_return: float
 
+    # Multi-agent episodes only. ``agents`` declares the agents; ``agent_returns``
+    # is each agent's cumulative return. Empty for single-agent episodes, where
+    # ``episode_return`` is the only return (for multi-agent it's the team sum).
+    agents: list[AgentSpec] = Field(default_factory=list)
+    agent_returns: dict[str, float] = Field(default_factory=dict)
+
     policy_checkpoint: str | None = None
     seed: int | None = None
 
@@ -73,6 +79,7 @@ class EpisodeMetadata(BaseModel):
             terminated=self.terminated,
             truncated=self.truncated,
             reset_reason=self.reset_reason,
+            agent_returns=self.agent_returns,
         )
 
 
@@ -88,3 +95,4 @@ class EpisodeSummary(BaseModel):
     terminated: bool
     truncated: bool
     reset_reason: str | None = None
+    agent_returns: dict[str, float] = Field(default_factory=dict)
