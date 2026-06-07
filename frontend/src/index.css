@@ -99,6 +99,8 @@ body {
 .button.loop.active { border-color: var(--accent); color: var(--accent); background: #1c2740; }
 .button.ghost { margin-left: 8px; }
 .render-mode { margin-left: auto; display: inline-flex; }
+.light-toggle { display: inline-flex; align-items: center; gap: 6px; margin-left: 12px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
+.light-toggle input { accent-color: var(--accent); cursor: pointer; }
 .button.seg { border-radius: 0; }
 .button.seg:first-child { border-radius: 6px 0 0 6px; }
 .button.seg:last-child { border-radius: 0 6px 6px 0; border-left: none; }

@@ -14,6 +14,7 @@ at a task and it produces the meshes the viewer needs.
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 
 def main() -> None:
@@ -53,6 +54,7 @@ def main() -> None:
 
     from rl_episode_inspector.examples.isaaclab_poses import body_world_poses
     from rl_episode_inspector.examples.scene_geometry import export_articulation_meshes
+    from rl_episode_inspector.examples.scene_lights import extract_stage_lights
 
     env = gym.make(args.task, cfg=parse_env_cfg(args.task, num_envs=1))
     env.reset()
@@ -75,6 +77,22 @@ def main() -> None:
         body_poses=body_poses, diag=diag,
     )
 
+    # Capture the task's scene lights so the viewer can light the robot the same
+    # way the sim does. Written next to the meshes; episode generators load it and
+    # pass the lights to the recorder. Best-effort: a failure here must not abort
+    # the mesh export (lights have a viewer-side default).
+    light_diag: list[str] = []
+    try:
+        import json
+
+        lights = extract_stage_lights(stage, diag=light_diag)
+        if lights:
+            lights_path = Path(args.out_dir) / args.robot_key / "lights.json"
+            lights_path.parent.mkdir(parents=True, exist_ok=True)
+            lights_path.write_text(json.dumps(lights, indent=2))
+    except Exception as exc:  # noqa: BLE001
+        light_diag.append(f"light extraction failed: {exc!r}")
+
     with open("/tmp/rlei_mesh_export.txt", "w") as fh:
         fh.write(f"task={args.task} root={root_path}\n")
         fh.write(f"bodies={body_names}\n")
@@ -83,6 +101,9 @@ def main() -> None:
             fh.write(f"  {b}: {meshes.get(b, 'NO GEOMETRY')}\n")
         fh.write("DIAGNOSTICS:\n")
         for d in diag:
+            fh.write(f"  {d}\n")
+        fh.write("LIGHTS:\n")
+        for d in light_diag:
             fh.write(f"  {d}\n")
 
     env.close()

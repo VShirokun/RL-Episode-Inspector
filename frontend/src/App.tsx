@@ -27,6 +27,8 @@ export default function App() {
   const selectedId = usePlaybackStore((s) => s.selectedId);
   const renderMode = usePlaybackStore((s) => s.renderMode);
   const setRenderMode = usePlaybackStore((s) => s.setRenderMode);
+  const defaultLights = usePlaybackStore((s) => s.defaultLights);
+  const setDefaultLights = usePlaybackStore((s) => s.setDefaultLights);
   const [helpOpen, setHelpOpen] = useState(false);
   const hasBodies = (loaded?.metadata.viewer.bodies?.length ?? 0) > 0;
 
@@ -58,6 +60,20 @@ export default function App() {
               Cubes
             </button>
           </div>
+        )}
+        {hasBodies && (
+          <label
+            className="light-toggle"
+            title="Add a neutral default light rig. Turn off to see only the lights captured from the source task (if any)."
+          >
+            <input
+              type="checkbox"
+              checked={defaultLights}
+              onChange={(e) => setDefaultLights(e.target.checked)}
+              data-testid="default-lights"
+            />
+            Default light
+          </label>
         )}
         <button className="button ghost" onClick={() => setHelpOpen(true)}>
           ? Help

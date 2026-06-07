@@ -18,6 +18,7 @@ normal project venv:
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 import numpy as np
@@ -28,6 +29,18 @@ from rl_episode_inspector.examples.humanoid.motion_replay import (
     parents_for,
 )
 from rl_episode_inspector.recorder import EpisodeRecorder
+from rl_episode_inspector.storage import LightSpec
+
+# Scene lights captured at mesh-export time (sample_data/humanoid/assets), so the
+# replay is lit like the AMP task. Absent => the viewer uses its default rig.
+DEFAULT_LIGHTS_PATH = "sample_data/humanoid/assets/humanoid28/lights.json"
+
+
+def load_lights(path: str) -> list[LightSpec]:
+    p = Path(path)
+    if not p.exists():
+        return []
+    return [LightSpec(**d) for d in json.loads(p.read_text())]
 
 DEFAULT_MOTIONS_DIR = (
     "/mnt/nvme2n1/IsaacLab/source/isaaclab_tasks/isaaclab_tasks/"
@@ -41,10 +54,15 @@ def main() -> None:
     parser.add_argument("--motions-dir", default=DEFAULT_MOTIONS_DIR)
     parser.add_argument("--output-dir", default="sample_data/humanoid/episodes")
     parser.add_argument("--clips", default="walk,run,dance")
+    parser.add_argument("--lights", default=DEFAULT_LIGHTS_PATH,
+                        help="lights.json captured at export time (optional)")
     args = parser.parse_args()
 
     motions_dir = Path(args.motions_dir)
     clips = [c.strip() for c in args.clips.split(",") if c.strip()]
+    lights = load_lights(args.lights)
+    if lights:
+        print(f"using {len(lights)} scene light(s) from {args.lights}")
 
     created: list[str] = []
     for ep_index, clip in enumerate(clips, start=1):
@@ -73,6 +91,7 @@ def main() -> None:
             episode_id_prefix="humanoid",
             viewer_type="articulation3d",
             up_axis="z",
+            lights=lights,
             signal_units={"root_height": "m", "forward_velocity": "m/s"},
             signal_descriptions={
                 "root_height": "Pelvis height above ground",

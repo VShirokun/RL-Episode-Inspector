@@ -28,6 +28,7 @@ interface PlaybackState {
   speed: PlaybackSpeed;
   loop: boolean; // when true, playback restarts at frame 0 instead of stopping
   renderMode: "models" | "cubes"; // 3D bodies: real meshes (default) or proxy cubes
+  defaultLights: boolean; // add the viewer's fallback light rig (on top of any sim lights)
 
   // derived
   numFrames: () => number;
@@ -47,6 +48,7 @@ interface PlaybackState {
   setSpeed: (speed: PlaybackSpeed) => void;
   toggleLoop: () => void;
   setRenderMode: (mode: "models" | "cubes") => void;
+  setDefaultLights: (on: boolean) => void;
   tick: (elapsedSeconds: number) => void;
 }
 
@@ -70,6 +72,7 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => ({
   speed: 1,
   loop: true,
   renderMode: "models",
+  defaultLights: true,
 
   numFrames: () => get().loaded?.metadata.num_frames ?? 0,
 
@@ -143,6 +146,8 @@ export const usePlaybackStore = create<PlaybackState>((set, get) => ({
   toggleLoop: () => set({ loop: !get().loop }),
 
   setRenderMode: (mode) => set({ renderMode: mode }),
+
+  setDefaultLights: (on) => set({ defaultLights: on }),
 
   tick: (elapsedSeconds) => {
     const { isPlaying, loaded, currentFrame, speed, loop } = get();

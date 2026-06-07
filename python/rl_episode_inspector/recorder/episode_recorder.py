@@ -19,6 +19,7 @@ from ..storage import (
     BodySpec,
     EpisodeMetadata,
     EpisodeStore,
+    LightSpec,
     MarkerSpec,
     SignalKind,
     SignalSpec,
@@ -68,6 +69,7 @@ class EpisodeRecorder:
         signal_units: dict[str, str] | None = None,
         signal_descriptions: dict[str, str] | None = None,
         markers: list[MarkerSpec] | None = None,
+        lights: list[LightSpec] | None = None,
         up_axis: str = "z",
         max_saved_episodes: int | None = None,
     ) -> None:
@@ -84,6 +86,7 @@ class EpisodeRecorder:
         self.signal_units = dict(signal_units or {})
         self.signal_descriptions = dict(signal_descriptions or {})
         self.markers = list(markers or [])
+        self.lights = list(lights or [])
         self.up_axis = up_axis
         self.max_saved_episodes = max_saved_episodes
 
@@ -257,6 +260,7 @@ class EpisodeRecorder:
                 state_mapping=self.state_mapping,
                 bodies=self._body_specs,
                 markers=self.markers,
+                lights=self.lights,
                 up_axis=self.up_axis,
             ),
         )

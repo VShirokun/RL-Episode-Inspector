@@ -34,10 +34,20 @@ export interface MarkerSpec {
   color: string | null;
 }
 
+export interface LightSpec {
+  name: string;
+  kind: "directional" | "point" | "ambient" | "hemisphere";
+  color: [number, number, number]; // linear RGB 0..1
+  intensity: number; // normalized for real-time rendering
+  direction?: [number, number, number] | null; // sim frame, for directional
+  position?: [number, number, number] | null; // sim frame, for point
+}
+
 export interface ViewerSpec {
   type: string;
   state_mapping: Record<string, string>;
   bodies?: BodySpec[];
   markers?: MarkerSpec[];
+  lights?: LightSpec[]; // captured from the sim; empty => default rig
   up_axis?: "z" | "y";
 }

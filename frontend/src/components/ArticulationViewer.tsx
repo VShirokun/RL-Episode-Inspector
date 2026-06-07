@@ -46,10 +46,17 @@ export function ArticulationViewer() {
     controls.enableDamping = true;
     controls.target.set(0, 0.4, 0);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.85));
-    const dir = new THREE.DirectionalLight(0xffffff, 0.7);
-    dir.position.set(2, 4, 3);
-    scene.add(dir);
+    // Default fallback light rig. Always built; its *visibility* is driven by
+    // the store's `defaultLights` flag (toggled by a checkbox), so turning it on
+    // or off needs no scene rebuild / mesh reload. When the task carries its own
+    // lights (below), the user can switch this off to see only the sim lighting.
+    const defaultLights = new THREE.Group();
+    defaultLights.add(new THREE.AmbientLight(0xffffff, 0.85));
+    const defDir = new THREE.DirectionalLight(0xffffff, 0.7);
+    defDir.position.set(2, 4, 3);
+    defaultLights.add(defDir);
+    defaultLights.visible = usePlaybackStore.getState().defaultLights;
+    scene.add(defaultLights);
     const grid = new THREE.GridHelper(2, 20, 0x335, 0x223);
     scene.add(grid);
 
@@ -59,6 +66,33 @@ export function ArticulationViewer() {
     const root = new THREE.Group();
     if (upAxis === "z") root.rotation.x = -Math.PI / 2;
     scene.add(root);
+
+    // Lights captured from the source sim (metadata.viewer.lights): light the
+    // replay the same way the task does. Directional/point lights live under
+    // `root` so the sim(z-up)->three(y-up) mapping applies to their direction/
+    // position; ambient/hemisphere are orientation-free. Empty list => the
+    // default rig above carries the scene.
+    const simLights = loaded0?.metadata.viewer.lights ?? [];
+    for (const L of simLights) {
+      const c = new THREE.Color(L.color?.[0] ?? 1, L.color?.[1] ?? 1, L.color?.[2] ?? 1);
+      if (L.kind === "directional") {
+        const dl = new THREE.DirectionalLight(c, L.intensity);
+        const d = L.direction ?? [0, 0, -1];
+        // a DirectionalLight shines from its position toward the origin (its
+        // default target), so place it opposite the travel direction `d`
+        dl.position.set(-d[0], -d[1], -d[2]);
+        root.add(dl);
+      } else if (L.kind === "point") {
+        const p = L.position ?? [0, 0, 0];
+        const pl = new THREE.PointLight(c, L.intensity);
+        pl.position.set(p[0], p[1], p[2]);
+        root.add(pl);
+      } else if (L.kind === "hemisphere") {
+        scene.add(new THREE.HemisphereLight(c, 0x202028, L.intensity));
+      } else {
+        scene.add(new THREE.AmbientLight(c, L.intensity));
+      }
+    }
 
     // "models" => solid geometry (real meshes where available, else solid
     // capsule limbs + joint spheres so a meshless robot like the MuJoCo humanoid
@@ -255,7 +289,13 @@ export function ArticulationViewer() {
     ro.observe(mount);
     controls.addEventListener("start", requestRender);
     controls.addEventListener("change", requestRender);
-    const unsubscribe = usePlaybackStore.subscribe(requestRender);
+    // Keep the default-rig visibility in sync with the store (checkbox) and
+    // wake the render loop on any store change (playback ticks, seeks, toggles).
+    const onStore = () => {
+      defaultLights.visible = usePlaybackStore.getState().defaultLights;
+      requestRender();
+    };
+    const unsubscribe = usePlaybackStore.subscribe(onStore);
     ensureRunning();
 
     return () => {

@@ -71,6 +71,28 @@ class MarkerSpec(BaseModel):
     color: str | None = None
 
 
+class LightSpec(BaseModel):
+    """A scene light captured from the source sim, for the 3D viewer.
+
+    Renderer-agnostic so the frontend can map it onto Three.js lights. ``kind``
+    is one of ``directional`` (a far light like a USD DistantLight/sun),
+    ``point`` (a local SphereLight), ``ambient`` (flat fill) or ``hemisphere``
+    (sky/ground fill, e.g. a DomeLight). ``color`` is linear RGB in 0..1.
+    ``intensity`` is normalized for real-time rendering (NOT the source's
+    physical photometric units, which don't map 1:1 to a rasterizer).
+    ``direction`` (for ``directional``) is the unit vector the light travels
+    along, and ``position`` (for ``point``) is its location — both in the
+    recorded sim frame (z-up for Isaac), same as body poses.
+    """
+
+    name: str
+    kind: str = "directional"  # directional | point | ambient | hemisphere
+    color: list[float] = Field(default_factory=lambda: [1.0, 1.0, 1.0])
+    intensity: float = 1.0
+    direction: list[float] | None = None  # [x, y, z], sim frame
+    position: list[float] | None = None  # [x, y, z], sim frame
+
+
 class ViewerSpec(BaseModel):
     """Tells the frontend which 3D viewer to use and how to feed it state.
 
@@ -86,4 +108,7 @@ class ViewerSpec(BaseModel):
     state_mapping: dict[str, str] = Field(default_factory=dict)
     bodies: list[BodySpec] = Field(default_factory=list)
     markers: list[MarkerSpec] = Field(default_factory=list)
+    # Lights captured from the source sim. Empty => the viewer uses its built-in
+    # default light rig (which the user can also toggle).
+    lights: list[LightSpec] = Field(default_factory=list)
     up_axis: str = "z"
