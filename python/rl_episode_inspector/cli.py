@@ -72,7 +72,9 @@ def rank(
 @app.command()
 def serve(
     episodes_dir: Path = typer.Option(
-        Path("sample_data/cartpole/episodes"), "--episodes-dir", "-d"
+        # Default to the real Isaac Lab Franka Reach experiment (committed, so it
+        # serves out of the box without Isaac). Override with --episodes-dir.
+        Path("sample_data/reach/episodes"), "--episodes-dir", "-d"
     ),
     assets_dir: Path | None = typer.Option(
         None, "--assets-dir", help="robot mesh GLBs served at /assets"

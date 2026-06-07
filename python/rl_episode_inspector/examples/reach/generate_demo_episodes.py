@@ -66,8 +66,9 @@ def main() -> None:
         distance,
     )
     from rl_episode_inspector.examples.scene_geometry import export_articulation_meshes
+    from rl_episode_inspector.examples.scene_lights import extract_stage_lights
     from rl_episode_inspector.recorder import EpisodeRecorder
-    from rl_episode_inspector.storage import MarkerSpec
+    from rl_episode_inspector.storage import LightSpec, MarkerSpec
 
     weights = load_reward_weights(args.reward_config)
 
@@ -157,12 +158,16 @@ def main() -> None:
     except Exception:  # noqa: BLE001
         root_path = str(robot.cfg.prim_path).replace("env_.*", "env_0").replace(".*", "0")
     env.reset(seed=args.seed)  # populate articulation data before reading body poses
+    stage = omni.usd.get_context().get_stage()
     mesh_map = export_articulation_meshes(
-        omni.usd.get_context().get_stage(), root_path, body_names, assets_dir, "franka",
+        stage, root_path, body_names, assets_dir, "franka",
         body_poses=body_world_poses(robot),
     )
     body_meshes = [mesh_map.get(name) for name in body_names]
     recorder.register_bodies(body_names, body_parents, meshes=body_meshes)
+    # Light the replayed robot the same way the Franka task does (captured from
+    # the composed stage). Empty => the viewer's default rig is used.
+    recorder.lights = [LightSpec(**d) for d in extract_stage_lights(stage)]
 
     rng = np.random.default_rng(args.seed)
     created: list[str] = []

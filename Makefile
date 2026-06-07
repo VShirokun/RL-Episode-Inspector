@@ -5,6 +5,10 @@ VENV ?= .venv
 PY := $(VENV)/bin/python
 RLEI := $(VENV)/bin/rl-episode-inspector
 EPISODES_DIR ?= sample_data/cartpole/episodes
+# What `make backend-dev` serves by default: the real Franka Reach experiment
+# (committed episodes + meshes, so it runs with no Isaac install). Override e.g.
+# `make backend-dev SERVE_DIR=sample_data/cartpole/episodes`.
+SERVE_DIR ?= sample_data/reach/episodes
 ISAACLAB ?= /mnt/nvme2n1/IsaacLab
 
 .PHONY: help
@@ -47,8 +51,8 @@ generate-reach-demo: ## Generate REAL Isaac Lab Franka Reach episodes (sparse re
 
 # ---- servers ----
 .PHONY: backend-dev
-backend-dev: ## Run the backend API on :8000
-	$(RLEI) serve --episodes-dir $(EPISODES_DIR) --host 127.0.0.1 --port 8000
+backend-dev: ## Run the backend API on :8000 (serves the real Franka Reach experiment by default)
+	$(RLEI) serve --episodes-dir $(SERVE_DIR) --host 127.0.0.1 --port 8000
 
 .PHONY: serve-reach
 serve-reach: ## Serve the committed Franka Reach demo episodes (no Isaac needed)

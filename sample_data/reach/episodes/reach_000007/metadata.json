@@ -6,7 +6,7 @@
   "task_source": "isaac_lab",
   "env_id": 0,
   "episode_index": 7,
-  "created_at": "2026-05-30T15:43:29Z",
+  "created_at": "2026-06-07T20:56:10Z",
   "num_frames": 475,
   "dt": 0.03333333333333333,
   "fps": 30.0,
@@ -1109,6 +1109,36 @@
           "target_z"
         ],
         "color": "#4ecb71"
+      }
+    ],
+    "lights": [
+      {
+        "name": "SphereLight",
+        "kind": "point",
+        "color": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "intensity": 1.0,
+        "direction": null,
+        "position": [
+          0.0,
+          0.0,
+          1.45
+        ]
+      },
+      {
+        "name": "light",
+        "kind": "hemisphere",
+        "color": [
+          0.75,
+          0.75,
+          0.75
+        ],
+        "intensity": 0.9,
+        "direction": null,
+        "position": null
       }
     ],
     "up_axis": "z"

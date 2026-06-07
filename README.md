@@ -24,15 +24,18 @@ exact frame where something interesting happened.
 - 🧱 **Generic signal model** — the core stores `SignalSpec`s, not Cartpole columns; easy to extend.
 - 🧪 **CI-safe** — fake data exercises storage → backend → frontend → E2E without GPU/Omniverse.
 
-## Quick start (fake data, no Isaac Lab)
+## Quick start (no Isaac Lab needed)
+
+By default the app serves a **real Isaac Lab Franka Reach experiment** — its
+episodes and exact robot meshes are committed, so it runs out of the box without
+an Isaac install.
 
 ```bash
 git clone <repo> && cd rl-episode-inspector
 
 # Python backend
 make install                       # create .venv and install the package
-make generate-fake-cartpole-demo   # write sample episodes to sample_data/
-make backend-dev                   # serve API at http://127.0.0.1:8000
+make backend-dev                   # serve the real Franka Reach experiment at :8000
 
 # Frontend (in a second terminal)
 make frontend-install
@@ -40,6 +43,14 @@ make frontend-dev                  # open http://localhost:3000
 ```
 
 Then open <http://localhost:3000>, hit **Best**, and press **Space** to play.
+
+Prefer the lightweight, GPU-free fake Cartpole data instead? Generate it and
+point the server at it:
+
+```bash
+make generate-fake-cartpole-demo                          # writes sample_data/cartpole/episodes
+make backend-dev SERVE_DIR=sample_data/cartpole/episodes  # serve that instead
+```
 
 ## Quick start (real Isaac Lab Cartpole)
 
