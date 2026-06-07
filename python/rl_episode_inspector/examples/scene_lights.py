@@ -23,9 +23,19 @@ _DISTANT = ("DistantLight",)
 _DOME = ("DomeLight",)
 _POINT = ("SphereLight", "DiskLight", "RectLight", "CylinderLight")
 
-# Target real-time intensities (the brightest key light maps here).
-_KEY_INTENSITY = 1.1
-_AMBIENT_INTENSITY = 0.55
+# Target real-time intensities, per light kind. USD photometric units are NOT
+# comparable across light types (a SphereLight's candela vs a DomeLight's nits vs
+# a DistantLight's lux), so we never normalize across kinds — each kind gets a
+# perceptually sensible target and raw values only scale lights *within* a kind.
+# This preserves the lighting's character (where light comes from, its color)
+# without one type's huge raw number drowning another to near-black.
+_KEY_INTENSITY = 1.0  # directional (sun-like)
+_POINT_INTENSITY = 1.0  # local point light
+# Dome/hemisphere fill is the main thing that lights camera-facing surfaces in a
+# simple (no-IBL) renderer, so give it enough weight that a scene lit ONLY by a
+# dome + an overhead key still shows the robot clearly (matching how Isaac's dome
+# fills the scene), not as a near-black silhouette.
+_AMBIENT_INTENSITY = 0.9  # dome / hemisphere fill
 
 
 def _color(light: Any) -> list[float]:
@@ -101,26 +111,26 @@ def extract_stage_lights(stage: Any, diag: list[str] | None = None) -> list[dict
             diag.append("no UsdLux lights found")
         return []
 
-    # Normalize: brightest non-dome light -> _KEY_INTENSITY; dome -> ambient fill.
-    key_raw = max((r for k, _, _, r, _ in found if k != "hemisphere"), default=0.0)
-    dome_raw = max((r for k, _, _, r, _ in found if k == "hemisphere"), default=0.0)
-    norm = max(key_raw, dome_raw, 1e-9)
+    # Per-kind reference (brightest of that kind) so raw values only scale lights
+    # within their own kind — never across the incompatible unit systems.
+    target = {"directional": _KEY_INTENSITY, "point": _POINT_INTENSITY,
+              "hemisphere": _AMBIENT_INTENSITY}
+    kind_ref = {k: max((r for kk, _, _, r, _ in found if kk == k), default=1.0)
+                for k in target}
 
     lights: list[dict] = []
     for kind, name, color, raw, prim in found:
+        intensity = round(target[kind] * (raw / max(kind_ref[kind], 1e-9)), 4)
         if kind == "hemisphere":
-            intensity = _AMBIENT_INTENSITY * (raw / norm)
             lights.append({"name": name, "kind": "hemisphere", "color": color,
-                           "intensity": round(intensity, 4)})
+                           "intensity": intensity})
         elif kind == "directional":
-            intensity = _KEY_INTENSITY * (raw / norm)
             lights.append({"name": name, "kind": "directional", "color": color,
-                           "intensity": round(intensity, 4),
+                           "intensity": intensity,
                            "direction": [round(v, 4) for v in _world_dir(prim, cache)]})
         else:  # point
-            intensity = _KEY_INTENSITY * (raw / norm)
             lights.append({"name": name, "kind": "point", "color": color,
-                           "intensity": round(intensity, 4),
+                           "intensity": intensity,
                            "position": [round(v, 4) for v in _world_pos(prim, cache)]})
         if diag is not None:
             diag.append(f"light {name} type={prim.GetTypeName()} -> {kind} "

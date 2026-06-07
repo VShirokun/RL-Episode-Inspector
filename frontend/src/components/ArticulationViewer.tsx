@@ -62,6 +62,12 @@ export function ArticulationViewer() {
 
     let needsRender = true;
     let lastFrame = -1;
+    // Async GLB loads finish *after* the render loop may have gone idle; `wake`
+    // (wired to requestRender once it exists) both marks a redraw AND restarts
+    // the stopped rAF loop, so a late-loading mesh actually gets drawn.
+    let wake: () => void = () => {
+      needsRender = true;
+    };
 
     const root = new THREE.Group();
     if (upAxis === "z") root.rotation.x = -Math.PI / 2;
@@ -85,10 +91,16 @@ export function ArticulationViewer() {
       } else if (L.kind === "point") {
         const p = L.position ?? [0, 0, 0];
         const pl = new THREE.PointLight(c, L.intensity);
+        // decay 0: the captured intensity is already normalized for inspection,
+        // so keep it uniform — the position still sets where the light comes from
+        // without the physical 1/d^2 falloff blacking out the far side of a robot.
+        pl.decay = 0;
         pl.position.set(p[0], p[1], p[2]);
         root.add(pl);
       } else if (L.kind === "hemisphere") {
-        scene.add(new THREE.HemisphereLight(c, 0x202028, L.intensity));
+        // ground term kept fairly light so downward / camera-facing normals still
+        // read (a near-black ground would silhouette the robot from the side)
+        scene.add(new THREE.HemisphereLight(c, 0x44505f, L.intensity));
       } else {
         scene.add(new THREE.AmbientLight(c, L.intensity));
       }
@@ -111,14 +123,14 @@ export function ArticulationViewer() {
       const addBox = () => {
         g.add(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.05),
           new THREE.MeshStandardMaterial({ color: i === 0 ? 0x8899aa : 0x4f9dff, metalness: 0.2, roughness: 0.6 })));
-        needsRender = true;
+        wake();
       };
       const addJoint = () => {
         g.add(new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 16), b.parent < 0 ? rootMat : jointMat));
-        needsRender = true;
+        wake();
       };
       if (solid && b.mesh) {
-        loader.load(`/api/assets/${b.mesh}`, (gltf) => { g.add(gltf.scene); needsRender = true; },
+        loader.load(`/api/assets/${b.mesh}`, (gltf) => { g.add(gltf.scene); wake(); },
           undefined, () => addJoint()); // GLB missing/failed -> solid joint
       } else if (solid) {
         addJoint(); // meshless body in models mode -> solid joint sphere
@@ -280,6 +292,8 @@ export function ArticulationViewer() {
       needsRender = true;
       ensureRunning();
     };
+    // Now that the loop can be (re)started, route late mesh loads through it.
+    wake = requestRender;
 
     // Wake the loop on camera interaction, playback ticks, seeks, and resizes.
     const ro = new ResizeObserver(() => {

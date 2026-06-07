@@ -1,0 +1,27 @@
+[
+  {
+    "name": "SphereLight",
+    "kind": "point",
+    "color": [
+      1.0,
+      1.0,
+      1.0
+    ],
+    "intensity": 1.0,
+    "position": [
+      0.0,
+      0.0,
+      2.5
+    ]
+  },
+  {
+    "name": "Light",
+    "kind": "hemisphere",
+    "color": [
+      0.75,
+      0.75,
+      0.75
+    ],
+    "intensity": 0.9
+  }
+]
