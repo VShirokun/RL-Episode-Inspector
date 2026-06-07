@@ -2,6 +2,7 @@
 // colors. Pure functions so they can be tested without rendering.
 
 import type { LoadedEpisode } from "../types/episode";
+import type { SignalKind } from "../types/signal";
 import type { Series } from "./TimeSeriesChart";
 
 const PALETTE = [
@@ -28,6 +29,18 @@ export function weightedRewardNames(loaded: LoadedEpisode): string[] {
 
 export function rawRewardNames(loaded: LoadedEpisode): string[] {
   return loaded.metadata.signals.filter((s) => s.kind === "reward_raw").map((s) => s.name);
+}
+
+/** Names of all signals of a given kind, in declaration order (e.g. actions). */
+export function signalNamesByKind(loaded: LoadedEpisode, kind: SignalKind): string[] {
+  return loaded.metadata.signals.filter((s) => s.kind === kind).map((s) => s.name);
+}
+
+/** Map signal name -> unit, for chart titles/readouts (only signals with units). */
+export function signalUnits(loaded: LoadedEpisode): Map<string, string> {
+  const units = new Map<string, string>();
+  for (const s of loaded.metadata.signals) if (s.unit) units.set(s.name, s.unit);
+  return units;
 }
 
 /** Build chart Series for a list of signal names, skipping any that are absent. */

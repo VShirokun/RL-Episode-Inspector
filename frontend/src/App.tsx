@@ -9,6 +9,7 @@ import { LoadingState } from "./components/LoadingState";
 import { MetadataPanel } from "./components/MetadataPanel";
 import { ReachViewer } from "./components/ReachViewer";
 import { RewardCharts } from "./components/RewardCharts";
+import { SignalCharts } from "./components/SignalCharts";
 import { TimelineControls } from "./components/TimelineControls";
 import { Viewer3D } from "./components/Viewer3D";
 import { useKeyboardControls } from "./playback/useKeyboardControls";
@@ -114,6 +115,7 @@ export default function App() {
             <>
               <CombinedRewardChart />
               <RewardCharts />
+              <SignalCharts />
             </>
           )}
         </section>
