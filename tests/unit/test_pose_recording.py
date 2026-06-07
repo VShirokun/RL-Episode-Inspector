@@ -102,3 +102,40 @@ def test_markers_and_up_axis_in_viewer_spec(tmp_path):
     assert v.up_axis == "z"
     assert v.markers[0].name == "target"
     assert v.markers[0].pos == ["tx", "ty", "tz"]
+
+
+def test_lights_round_trip_through_metadata(tmp_path):
+    from rl_episode_inspector.storage import LightSpec
+
+    lights = [
+        LightSpec(name="key", kind="directional", color=[1.0, 0.9, 0.8],
+                  intensity=1.0, direction=[0.0, 0.0, -1.0]),
+        LightSpec(name="dome", kind="hemisphere", color=[0.7, 0.7, 0.7], intensity=0.6),
+    ]
+    rec = _recorder(tmp_path, lights=lights, up_axis="z")
+    rec.register_bodies(["b"], parents=[-1])
+    rec.start_episode(episode_index=0)
+    _frame(rec, 0, {"b": (0, 0, 0, 1, 0, 0, 0)})
+    rec.record_frame(
+        frame_index=1, timestamp=1 / 30, state={}, action={},
+        rewards_raw={"alive": 1.0}, reward_weights={"alive": 1.0},
+        terminated=False, truncated=True, poses={"b": (0, 0, 0, 1, 0, 0, 0)},
+    )
+    rec.end_episode()
+
+    saved = EpisodeStore(tmp_path).load_metadata("arm_000000").viewer.lights
+    assert [light.name for light in saved] == ["key", "dome"]
+    assert saved[0].kind == "directional"
+    assert saved[0].direction == [0.0, 0.0, -1.0]
+    assert saved[1].kind == "hemisphere"
+    assert saved[1].direction is None and saved[1].position is None
+
+
+def test_lights_default_empty(tmp_path):
+    """No lights passed => viewer.lights is an empty list (viewer uses its rig)."""
+    rec = _recorder(tmp_path)
+    rec.register_bodies(["b"], parents=[-1])
+    rec.start_episode(episode_index=0)
+    _frame(rec, 0, {"b": (0, 0, 0, 1, 0, 0, 0)})
+    rec.end_episode()
+    assert EpisodeStore(tmp_path).load_metadata("arm_000000").viewer.lights == []

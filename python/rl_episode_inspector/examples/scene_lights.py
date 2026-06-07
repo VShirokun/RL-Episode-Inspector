@@ -90,7 +90,9 @@ def extract_stage_lights(stage: Any, diag: list[str] | None = None) -> list[dict
     from pxr import Usd, UsdGeom
 
     cache = UsdGeom.XformCache()
-    found: list[tuple[str, str, list[float], float, Any]] = []  # kind,name,color,raw,prim
+    # Per-light "raw" entries (geometry already resolved). normalize_lights() —
+    # which is pure / USD-free and unit-tested — turns these into final specs.
+    found: list[dict] = []
     for prim in Usd.PrimRange.Stage(stage, Usd.TraverseInstanceProxies()):
         t = prim.GetTypeName()
         if t in _DISTANT:
@@ -104,35 +106,47 @@ def extract_stage_lights(stage: Any, diag: list[str] | None = None) -> list[dict
         raw = _raw_intensity(prim)
         if raw <= 0.0:
             continue
-        found.append((kind, prim.GetName(), _color(prim), raw, prim))
+        entry = {"name": prim.GetName(), "kind": kind, "color": _color(prim),
+                 "raw": raw, "type": str(t)}
+        if kind == "directional":
+            entry["direction"] = [round(v, 4) for v in _world_dir(prim, cache)]
+        elif kind == "point":
+            entry["position"] = [round(v, 4) for v in _world_pos(prim, cache)]
+        found.append(entry)
 
-    if not found:
-        if diag is not None:
+    lights = normalize_lights(found)
+    if diag is not None:
+        if not lights:
             diag.append("no UsdLux lights found")
-        return []
+        for raw_e, spec in zip(found, lights):
+            diag.append(f"light {spec['name']} type={raw_e['type']} -> {spec['kind']} "
+                        f"raw={round(raw_e['raw'], 2)} norm_intensity={spec['intensity']}")
+    return lights
 
-    # Per-kind reference (brightest of that kind) so raw values only scale lights
-    # within their own kind — never across the incompatible unit systems.
+
+def normalize_lights(found: list[dict]) -> list[dict]:
+    """Normalize raw per-light entries into ``LightSpec``-shaped dicts (pure).
+
+    Each ``found`` entry has ``name``/``kind``/``color``/``raw`` plus ``direction``
+    (directional) or ``position`` (point). Intensities are normalized **within
+    each kind** to that kind's real-time target — never across kinds, because USD
+    photometric units aren't comparable between light types (so a huge SphereLight
+    ``raw`` can't crush a DomeLight's fill toward zero). Output order matches input.
+    """
+    if not found:
+        return []
     target = {"directional": _KEY_INTENSITY, "point": _POINT_INTENSITY,
               "hemisphere": _AMBIENT_INTENSITY}
-    kind_ref = {k: max((r for kk, _, _, r, _ in found if kk == k), default=1.0)
+    kind_ref = {k: max((e["raw"] for e in found if e["kind"] == k), default=1.0)
                 for k in target}
-
-    lights: list[dict] = []
-    for kind, name, color, raw, prim in found:
-        intensity = round(target[kind] * (raw / max(kind_ref[kind], 1e-9)), 4)
-        if kind == "hemisphere":
-            lights.append({"name": name, "kind": "hemisphere", "color": color,
-                           "intensity": intensity})
-        elif kind == "directional":
-            lights.append({"name": name, "kind": "directional", "color": color,
-                           "intensity": intensity,
-                           "direction": [round(v, 4) for v in _world_dir(prim, cache)]})
-        else:  # point
-            lights.append({"name": name, "kind": "point", "color": color,
-                           "intensity": intensity,
-                           "position": [round(v, 4) for v in _world_pos(prim, cache)]})
-        if diag is not None:
-            diag.append(f"light {name} type={prim.GetTypeName()} -> {kind} "
-                        f"raw={round(raw, 2)} norm_intensity={round(intensity, 3)}")
-    return lights
+    out: list[dict] = []
+    for e in found:
+        kind = e["kind"]
+        intensity = round(target[kind] * (e["raw"] / max(kind_ref[kind], 1e-9)), 4)
+        spec = {"name": e["name"], "kind": kind, "color": e["color"], "intensity": intensity}
+        if "direction" in e:
+            spec["direction"] = e["direction"]
+        if "position" in e:
+            spec["position"] = e["position"]
+        out.append(spec)
+    return out

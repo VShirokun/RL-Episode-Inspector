@@ -89,3 +89,14 @@ describe("looping", () => {
     expect(usePlaybackStore.getState().loop).toBe(false);
   });
 });
+
+describe("default lights toggle", () => {
+  it("defaults on and setDefaultLights flips it", () => {
+    usePlaybackStore.setState({ defaultLights: true });
+    expect(usePlaybackStore.getState().defaultLights).toBe(true);
+    usePlaybackStore.getState().setDefaultLights(false);
+    expect(usePlaybackStore.getState().defaultLights).toBe(false);
+    usePlaybackStore.getState().setDefaultLights(true);
+    expect(usePlaybackStore.getState().defaultLights).toBe(true);
+  });
+});
