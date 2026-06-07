@@ -5,9 +5,10 @@
 import { useMemo, useState } from "react";
 import { usePlaybackStore } from "../playback/playbackStore";
 import { TimeSeriesChart } from "./TimeSeriesChart";
-import { buildSeries, weightedRewardNames } from "./rewardSeries";
+import { buildSeries, stepTotalName, weightedRewardNames } from "./rewardSeries";
 
-export function CombinedRewardChart() {
+/** ``agent`` (multi-agent) selects that agent's weighted terms + total. */
+export function CombinedRewardChart({ agent = null }: { agent?: string | null }) {
   const loaded = usePlaybackStore((s) => s.loaded);
   const currentFrame = usePlaybackStore((s) => s.currentFrame);
   const numFrames = usePlaybackStore((s) => s.numFrames());
@@ -16,8 +17,8 @@ export function CombinedRewardChart() {
 
   const names = useMemo(() => {
     if (!loaded) return [];
-    return ["reward_step_total", ...weightedRewardNames(loaded)];
-  }, [loaded]);
+    return [stepTotalName(agent), ...weightedRewardNames(loaded, agent)];
+  }, [loaded, agent]);
 
   // Memoize series so their array refs are stable across per-frame re-renders
   // (lets TimeSeriesChart keep its memoized paths instead of rebuilding them).

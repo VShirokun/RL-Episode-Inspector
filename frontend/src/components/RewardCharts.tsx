@@ -5,11 +5,19 @@
 import { useMemo, useState } from "react";
 import { usePlaybackStore } from "../playback/playbackStore";
 import { TimeSeriesChart, type Series } from "./TimeSeriesChart";
-import { buildSeries, prettyName, rawRewardNames, weightedRewardNames } from "./rewardSeries";
+import {
+  buildSeries,
+  cumulativeName,
+  prettyName,
+  rawRewardNames,
+  stepTotalName,
+  weightedRewardNames,
+} from "./rewardSeries";
 
 const SMALL_COLORS = ["#4f9dff", "#4ecb71", "#ffb454", "#b78bff", "#ff6b6b", "#3fd0c9"];
 
-export function RewardCharts() {
+/** ``agent`` (multi-agent) restricts charts to that agent's reward components. */
+export function RewardCharts({ agent = null }: { agent?: string | null }) {
   const loaded = usePlaybackStore((s) => s.loaded);
   const currentFrame = usePlaybackStore((s) => s.currentFrame);
   const numFrames = usePlaybackStore((s) => s.numFrames());
@@ -20,28 +28,25 @@ export function RewardCharts() {
   // frame, so TimeSeriesChart can keep its memoized paths during playback.
   const charts = useMemo(() => {
     if (!loaded) return [];
-    const weighted = weightedRewardNames(loaded);
-    const names = [
-      "reward_step_total",
-      "reward_cumulative",
-      ...weighted,
-      ...(showRaw ? rawRewardNames(loaded) : []),
-    ];
+    const weighted = weightedRewardNames(loaded, agent);
+    const total = stepTotalName(agent);
+    const cumulative = cumulativeName(agent);
+    const names = [total, cumulative, ...weighted, ...(showRaw ? rawRewardNames(loaded, agent) : [])];
     const out: { name: string; label: string; series: Series[] }[] = [];
     names.forEach((name, i) => {
       const series = buildSeries(loaded, [name]);
       if (series.length === 0) return;
       series[0].color = SMALL_COLORS[i % SMALL_COLORS.length];
       const label =
-        name === "reward_step_total"
+        name === total
           ? "step total"
-          : name === "reward_cumulative"
+          : name === cumulative
             ? "cumulative"
             : prettyName(name) + (weighted.includes(name) ? " (weighted)" : "");
       out.push({ name, label, series });
     });
     return out;
-  }, [loaded, showRaw]);
+  }, [loaded, showRaw, agent]);
 
   if (!loaded) return null;
 

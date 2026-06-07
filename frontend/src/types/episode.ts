@@ -1,6 +1,6 @@
 // Mirrors python/rl_episode_inspector/storage/schemas.py
 
-import type { SignalSpec, ViewerSpec } from "./signal";
+import type { AgentSpec, SignalSpec, ViewerSpec } from "./signal";
 
 export interface EpisodeSummary {
   episode_id: string;
@@ -12,6 +12,7 @@ export interface EpisodeSummary {
   terminated: boolean;
   truncated: boolean;
   reset_reason: string | null;
+  agent_returns?: Record<string, number>;
 }
 
 export interface EpisodeMetadata {
@@ -33,6 +34,8 @@ export interface EpisodeMetadata {
   truncated: boolean;
   reset_reason: string | null;
   episode_return: number;
+  agents?: AgentSpec[]; // multi-agent only; empty/absent for single-agent
+  agent_returns?: Record<string, number>;
   policy_checkpoint: string | null;
   seed: number | null;
   signals: SignalSpec[];

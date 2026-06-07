@@ -102,7 +102,15 @@ body {
 .light-toggle { display: inline-flex; align-items: center; gap: 6px; margin-left: 12px; font-size: 13px; color: var(--muted); cursor: pointer; user-select: none; }
 .light-toggle input { accent-color: var(--accent); cursor: pointer; }
 .seg-group { display: inline-flex; }
-.signal-charts .seg-group .button.seg { padding: 3px 9px; font-size: 11px; }
+.signal-charts .seg-group .button.seg,
+.agent-selector .seg-group .button.seg { padding: 3px 9px; font-size: 11px; }
+.multiagent-rewards { display: flex; flex-direction: column; gap: 12px; }
+.agent-returns { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 8px; }
+.agent-return { display: inline-flex; align-items: baseline; gap: 6px; font-size: 12px; }
+.agent-return .k { color: var(--muted); }
+.agent-return .v { font-variant-numeric: tabular-nums; font-weight: 600; }
+.agent-return .v.pos { color: #4ecb71; }
+.agent-return .v.neg { color: #ff6b6b; }
 .button.seg { border-radius: 0; }
 .button.seg:first-child { border-radius: 6px 0 0 6px; }
 .button.seg:last-child { border-radius: 0 6px 6px 0; border-left: none; }

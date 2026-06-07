@@ -17,7 +17,14 @@ export interface SignalSpec {
   shape: number[];
   unit: string | null;
   description: string | null;
+  agent?: string | null; // multi-agent: which agent this signal belongs to
   display?: Record<string, unknown> | null;
+}
+
+export interface AgentSpec {
+  id: string;
+  label?: string | null;
+  team?: string | null;
 }
 
 export interface BodySpec {

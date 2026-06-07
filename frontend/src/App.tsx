@@ -7,8 +7,10 @@ import { ErrorState } from "./components/ErrorState";
 import { HelpModal } from "./components/HelpModal";
 import { LoadingState } from "./components/LoadingState";
 import { MetadataPanel } from "./components/MetadataPanel";
+import { MultiAgentRewards } from "./components/MultiAgentRewards";
 import { ReachViewer } from "./components/ReachViewer";
 import { RewardCharts } from "./components/RewardCharts";
+import { agentsOf } from "./components/rewardSeries";
 import { SignalCharts } from "./components/SignalCharts";
 import { TimelineControls } from "./components/TimelineControls";
 import { Viewer3D } from "./components/Viewer3D";
@@ -113,8 +115,14 @@ export default function App() {
         <section className="charts-pane">
           {loaded && (
             <>
-              <CombinedRewardChart />
-              <RewardCharts />
+              {agentsOf(loaded).length > 0 ? (
+                <MultiAgentRewards />
+              ) : (
+                <>
+                  <CombinedRewardChart />
+                  <RewardCharts />
+                </>
+              )}
               <SignalCharts />
             </>
           )}

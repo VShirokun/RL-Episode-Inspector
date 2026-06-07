@@ -2,7 +2,7 @@
 // colors. Pure functions so they can be tested without rendering.
 
 import type { LoadedEpisode } from "../types/episode";
-import type { SignalKind } from "../types/signal";
+import type { AgentSpec, SignalKind } from "../types/signal";
 import type { Series } from "./TimeSeriesChart";
 
 const PALETTE = [
@@ -20,15 +20,36 @@ function numericColumn(loaded: LoadedEpisode, name: string): number[] | null {
   return (col as Array<number | boolean>).map((v) => (typeof v === "number" ? v : v ? 1 : 0));
 }
 
-/** Names of weighted reward component signals, e.g. reward_alive_weighted. */
-export function weightedRewardNames(loaded: LoadedEpisode): string[] {
+/** Agents declared by a (multi-agent) episode; [] for single-agent episodes. */
+export function agentsOf(loaded: LoadedEpisode): AgentSpec[] {
+  return loaded.metadata.agents ?? [];
+}
+
+/**
+ * Names of weighted reward component signals for an agent. ``agent === null``
+ * selects the single-agent / shared signals (signal.agent == null); a string
+ * selects that agent's signals.
+ */
+export function weightedRewardNames(loaded: LoadedEpisode, agent: string | null = null): string[] {
   return loaded.metadata.signals
-    .filter((s) => s.kind === "reward_weighted")
+    .filter((s) => s.kind === "reward_weighted" && (s.agent ?? null) === agent)
     .map((s) => s.name);
 }
 
-export function rawRewardNames(loaded: LoadedEpisode): string[] {
-  return loaded.metadata.signals.filter((s) => s.kind === "reward_raw").map((s) => s.name);
+export function rawRewardNames(loaded: LoadedEpisode, agent: string | null = null): string[] {
+  return loaded.metadata.signals
+    .filter((s) => s.kind === "reward_raw" && (s.agent ?? null) === agent)
+    .map((s) => s.name);
+}
+
+/** Column name of an agent's per-frame total (or the team/single-agent total). */
+export function stepTotalName(agent: string | null = null): string {
+  return agent ? `reward_${agent}_step_total` : "reward_step_total";
+}
+
+/** Column name of an agent's cumulative return (or the team/single-agent one). */
+export function cumulativeName(agent: string | null = null): string {
+  return agent ? `reward_${agent}_cumulative` : "reward_cumulative";
 }
 
 /** Names of all signals of a given kind, in declaration order (e.g. actions). */
