@@ -10,6 +10,7 @@ from .schemas import (
     EpisodeSummary,
 )
 from .signal_schema import (
+    CameraSpec,
     AgentSpec,
     BodySpec,
     LightSpec,
@@ -32,6 +33,7 @@ __all__ = [
     "MarkerSpec",
     "LightSpec",
     "AgentSpec",
+    "CameraSpec",
     "EpisodeValidationError",
     "validate_episode",
     "REQUIRED_FRAME_COLUMNS",

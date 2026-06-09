@@ -18,6 +18,7 @@ import numpy as np
 from ..storage import (
     AgentSpec,
     BodySpec,
+    CameraSpec,
     EpisodeMetadata,
     EpisodeStore,
     LightSpec,
@@ -72,6 +73,7 @@ class EpisodeRecorder:
         markers: list[MarkerSpec] | None = None,
         lights: list[LightSpec] | None = None,
         agents: list[AgentSpec] | None = None,
+        camera: CameraSpec | None = None,
         up_axis: str = "z",
         max_saved_episodes: int | None = None,
     ) -> None:
@@ -90,6 +92,7 @@ class EpisodeRecorder:
         self.markers = list(markers or [])
         self.lights = list(lights or [])
         self.agents = list(agents or [])
+        self.camera = camera
         self.up_axis = up_axis
         self.max_saved_episodes = max_saved_episodes
 
@@ -343,6 +346,7 @@ class EpisodeRecorder:
                 bodies=self._body_specs,
                 markers=self.markers,
                 lights=self.lights,
+                camera=self.camera,
                 up_axis=self.up_axis,
             ),
         )

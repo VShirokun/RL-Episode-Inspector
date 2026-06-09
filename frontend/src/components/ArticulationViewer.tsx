@@ -51,9 +51,10 @@ export function ArticulationViewer() {
     // or off needs no scene rebuild / mesh reload. When the task carries its own
     // lights (below), the user can switch this off to see only the sim lighting.
     const defaultLights = new THREE.Group();
-    defaultLights.add(new THREE.AmbientLight(0xffffff, 0.85));
-    const defDir = new THREE.DirectionalLight(0xffffff, 0.7);
-    defDir.position.set(2, 4, 3);
+    defaultLights.add(new THREE.AmbientLight(0xffffff, 0.55));
+    defaultLights.add(new THREE.HemisphereLight(0xffffff, 0x40464f, 0.6));
+    const defDir = new THREE.DirectionalLight(0xffffff, 0.9);
+    defDir.position.set(3, 6, 4);
     defaultLights.add(defDir);
     defaultLights.visible = usePlaybackStore.getState().defaultLights;
     scene.add(defaultLights);
@@ -112,9 +113,24 @@ export function ArticulationViewer() {
     // "cubes" => lightweight boxes + thin bone lines.
     const solid = renderMode === "models";
     const loader = new GLTFLoader();
-    const jointMat = new THREE.MeshStandardMaterial({ color: 0x9fb3d1, metalness: 0.2, roughness: 0.6 });
-    const rootMat = new THREE.MeshStandardMaterial({ color: 0x8899aa, metalness: 0.2, roughness: 0.6 });
-    const limbMat = new THREE.MeshStandardMaterial({ color: 0x6f86b8, metalness: 0.15, roughness: 0.75 });
+    // Bright, distinct per-body colors — like viewers that flat-color untextured
+    // meshes. Tinting each body by index makes objects clearly visible and tells
+    // them apart (the exported GLBs carry no textures, and some come out dark).
+    const BODY_COLORS = [0xff5d5d, 0x4f9dff, 0xffd23b, 0x4ecb71, 0xb78bff, 0xff9d3b,
+                         0x3fd0c9, 0xff6fcf, 0x9ad24e, 0xffa3d1];
+    const colorFor = (i: number) => BODY_COLORS[i % BODY_COLORS.length];
+    // Bright flat-colored material: an emissive base so the color is always
+    // visible (like viewers that flat-shade untextured meshes), plus `flatShading`
+    // so lights still produce real shading even on exported meshes that ship
+    // WITHOUT vertex normals (which otherwise render unlit/black).
+    const bodyMat = (i: number) => {
+      const c = new THREE.Color(colorFor(i));
+      return new THREE.MeshStandardMaterial({
+        color: c, emissive: c, emissiveIntensity: 0.35,
+        metalness: 0.0, roughness: 0.75, flatShading: true,
+      });
+    };
+    const limbMat = new THREE.MeshStandardMaterial({ color: 0x6f86b8, metalness: 0.0, roughness: 0.8 });
 
     // Proxy size scales with the scene extent so meshless bodies stay visible on
     // a large scene (e.g. a tennis court spanning ~20 m) without being oversized
@@ -140,17 +156,25 @@ export function ArticulationViewer() {
       const g = new THREE.Group();
       root.add(g);
       const addBox = () => {
-        g.add(new THREE.Mesh(new THREE.BoxGeometry(proxySize, proxySize, proxySize),
-          new THREE.MeshStandardMaterial({ color: i === 0 ? 0x8899aa : 0x4f9dff, metalness: 0.2, roughness: 0.6 })));
+        g.add(new THREE.Mesh(new THREE.BoxGeometry(proxySize, proxySize, proxySize), bodyMat(i)));
         wake();
       };
       const addJoint = () => {
-        g.add(new THREE.Mesh(new THREE.SphereGeometry(proxySize, 16, 16), b.parent < 0 ? rootMat : jointMat));
+        g.add(new THREE.Mesh(new THREE.SphereGeometry(proxySize, 16, 16), bodyMat(i)));
         wake();
       };
       if (solid && b.mesh) {
-        loader.load(`/api/assets/${b.mesh}`, (gltf) => { g.add(gltf.scene); wake(); },
-          undefined, () => addJoint()); // GLB missing/failed -> solid joint
+        loader.load(`/api/assets/${b.mesh}`, (gltf) => {
+          // Replace the textureless (sometimes dark/metallic) exported material
+          // with a bright, fully lit per-body color so lighting reads clearly.
+          const mat = bodyMat(i);
+          gltf.scene.traverse((o) => {
+            const mesh = o as THREE.Mesh;
+            if (mesh.isMesh) mesh.material = mat;
+          });
+          g.add(gltf.scene);
+          wake();
+        }, undefined, () => addJoint()); // GLB missing/failed -> solid joint
       } else if (solid) {
         addJoint(); // meshless body in models mode -> solid joint sphere
       } else {
@@ -207,11 +231,21 @@ export function ArticulationViewer() {
         const cx = (lo[0] + hi[0]) / 2, cy = (lo[1] + hi[1]) / 2, cz = (lo[2] + hi[2]) / 2;
         const radius = Math.max(0.4, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2);
         const tx = cx, ty = cz, tz = -cy; // sim (z-up) -> three (y-up)
-        controls.target.set(tx, ty, tz);
-        const d = radius * 3.5; // pull back enough to clear the robot's own meshes
-        camera.position.set(tx + d * 0.7, ty + d * 0.6, tz + d * 0.7);
-        camera.near = Math.max(0.01, d * 0.01);
-        camera.far = d * 30;
+        const cam = loaded0.metadata.viewer.camera;
+        if (cam) {
+          // Park at the task's captured play viewpoint (sim z-up -> three y-up).
+          camera.position.set(cam.eye[0], cam.eye[2], -cam.eye[1]);
+          controls.target.set(cam.lookat[0], cam.lookat[2], -cam.lookat[1]);
+          const cd = Math.hypot(cam.eye[0] - cam.lookat[0], cam.eye[1] - cam.lookat[1], cam.eye[2] - cam.lookat[2]);
+          camera.near = Math.max(0.01, cd * 0.004);
+          camera.far = Math.max(cd, radius * 2) * 20;
+        } else {
+          controls.target.set(tx, ty, tz);
+          const d = radius * 3.5; // pull back enough to clear the robot's own meshes
+          camera.position.set(tx + d * 0.7, ty + d * 0.6, tz + d * 0.7);
+          camera.near = Math.max(0.01, d * 0.01);
+          camera.far = d * 30;
+        }
         camera.updateProjectionMatrix();
         // size the floor grid to the scene and place it under the motion (y=0 = ground)
         const span = Math.max(2, Math.ceil(radius * 3));
@@ -238,6 +272,7 @@ export function ArticulationViewer() {
     const followDelta = new THREE.Vector3();
     const UP = new THREE.Vector3(0, 1, 0); // CylinderGeometry axis
     const rootIdx = Math.max(0, bodies.findIndex((b) => b.parent < 0)); // follow this body
+    const followCam = !loaded0?.metadata.viewer.camera; // fixed task camera => don't follow
     const MIN_DRAW_MS = 1000 / 40; // cap GL draws at ~40 fps (eases software GL)
     let lastDraw = 0;
     let running = false;
@@ -284,12 +319,15 @@ export function ArticulationViewer() {
         });
         // Follow-cam: keep the root body centered (so a walking/dancing figure
         // stays in view). Translate camera + target by the root's movement; user
-        // orbit still works. Static-root robots (e.g. the reach arm) are a no-op.
-        followTarget.copy(bodyGroups[rootIdx].position);
-        root.localToWorld(followTarget);
-        followDelta.subVectors(followTarget, controls.target);
-        camera.position.add(followDelta);
-        controls.target.copy(followTarget);
+        // orbit still works. Disabled when the task provides a fixed camera (so
+        // the view matches the task's play viewpoint and doesn't drift).
+        if (followCam) {
+          followTarget.copy(bodyGroups[rootIdx].position);
+          root.localToWorld(followTarget);
+          followDelta.subVectors(followTarget, controls.target);
+          camera.position.add(followDelta);
+          controls.target.copy(followTarget);
+        }
         renderer.render(scene, camera);
       }
       // Keep the rAF loop alive only while there's something to animate; once

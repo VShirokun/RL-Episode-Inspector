@@ -50,11 +50,17 @@ export interface LightSpec {
   position?: [number, number, number] | null; // sim frame, for point
 }
 
+export interface CameraSpec {
+  eye: [number, number, number]; // sim frame (z-up)
+  lookat: [number, number, number];
+}
+
 export interface ViewerSpec {
   type: string;
   state_mapping: Record<string, string>;
   bodies?: BodySpec[];
   markers?: MarkerSpec[];
   lights?: LightSpec[]; // captured from the sim; empty => default rig
+  camera?: CameraSpec | null; // fixed task viewpoint; null => auto-frame + follow
   up_axis?: "z" | "y";
 }

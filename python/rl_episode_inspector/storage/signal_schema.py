@@ -110,6 +110,18 @@ class LightSpec(BaseModel):
     position: list[float] | None = None  # [x, y, z], sim frame
 
 
+class CameraSpec(BaseModel):
+    """A fixed viewpoint captured from the source sim (e.g. the env's play camera).
+
+    ``eye``/``lookat`` are in the recorded sim frame (z-up for Isaac), same as
+    body poses. When present, the viewer parks the camera here instead of
+    auto-framing + following a body, so the replay matches the task's play view.
+    """
+
+    eye: list[float]
+    lookat: list[float] = Field(default_factory=lambda: [0.0, 0.0, 0.0])
+
+
 class ViewerSpec(BaseModel):
     """Tells the frontend which 3D viewer to use and how to feed it state.
 
@@ -128,4 +140,7 @@ class ViewerSpec(BaseModel):
     # Lights captured from the source sim. Empty => the viewer uses its built-in
     # default light rig (which the user can also toggle).
     lights: list[LightSpec] = Field(default_factory=list)
+    # Fixed camera captured from the task (e.g. its play viewpoint). None => the
+    # viewer auto-frames and follows the root body.
+    camera: CameraSpec | None = None
     up_axis: str = "z"
