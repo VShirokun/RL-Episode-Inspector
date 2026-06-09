@@ -41,6 +41,8 @@ export function ArticulationViewer() {
     // input responsive even with the full meshes.
     const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     mount.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
@@ -51,10 +53,15 @@ export function ArticulationViewer() {
     // or off needs no scene rebuild / mesh reload. When the task carries its own
     // lights (below), the user can switch this off to see only the sim lighting.
     const defaultLights = new THREE.Group();
-    defaultLights.add(new THREE.AmbientLight(0xffffff, 0.55));
-    defaultLights.add(new THREE.HemisphereLight(0xffffff, 0x40464f, 0.6));
-    const defDir = new THREE.DirectionalLight(0xffffff, 0.9);
+    // Keep the fill modest so the key light produces visible shading + shadows
+    // (too much ambient/hemisphere washes shadows out).
+    defaultLights.add(new THREE.AmbientLight(0xffffff, 0.3));
+    defaultLights.add(new THREE.HemisphereLight(0xffffff, 0x3a4049, 0.35));
+    const defDir = new THREE.DirectionalLight(0xffffff, 1.15);
     defDir.position.set(3, 6, 4);
+    defDir.castShadow = true; // real shadows (frustum sized to the scene below)
+    defDir.shadow.mapSize.set(1024, 1024);
+    defDir.shadow.bias = -0.0008;
     defaultLights.add(defDir);
     defaultLights.visible = usePlaybackStore.getState().defaultLights;
     scene.add(defaultLights);
@@ -119,15 +126,15 @@ export function ArticulationViewer() {
     const BODY_COLORS = [0xff5d5d, 0x4f9dff, 0xffd23b, 0x4ecb71, 0xb78bff, 0xff9d3b,
                          0x3fd0c9, 0xff6fcf, 0x9ad24e, 0xffa3d1];
     const colorFor = (i: number) => BODY_COLORS[i % BODY_COLORS.length];
-    // Bright flat-colored material: an emissive base so the color is always
-    // visible (like viewers that flat-shade untextured meshes), plus `flatShading`
-    // so lights still produce real shading even on exported meshes that ship
-    // WITHOUT vertex normals (which otherwise render unlit/black).
+    // Bright per-body color. Real shading comes from the lights once the loaded
+    // mesh has normals (exported GLBs ship WITHOUT them — see the light test — so
+    // we compute them on load). A tiny emissive only keeps a fully-shadowed side
+    // from going pure black; it does NOT flatten the shading.
     const bodyMat = (i: number) => {
       const c = new THREE.Color(colorFor(i));
       return new THREE.MeshStandardMaterial({
-        color: c, emissive: c, emissiveIntensity: 0.35,
-        metalness: 0.0, roughness: 0.75, flatShading: true,
+        color: c, emissive: c, emissiveIntensity: 0.08,
+        metalness: 0.0, roughness: 0.7,
       });
     };
     const limbMat = new THREE.MeshStandardMaterial({ color: 0x6f86b8, metalness: 0.0, roughness: 0.8 });
@@ -156,21 +163,29 @@ export function ArticulationViewer() {
       const g = new THREE.Group();
       root.add(g);
       const addBox = () => {
-        g.add(new THREE.Mesh(new THREE.BoxGeometry(proxySize, proxySize, proxySize), bodyMat(i)));
+        const m = new THREE.Mesh(new THREE.BoxGeometry(proxySize, proxySize, proxySize), bodyMat(i));
+        m.castShadow = true; m.receiveShadow = true;
+        g.add(m);
         wake();
       };
       const addJoint = () => {
-        g.add(new THREE.Mesh(new THREE.SphereGeometry(proxySize, 16, 16), bodyMat(i)));
+        const m = new THREE.Mesh(new THREE.SphereGeometry(proxySize, 16, 16), bodyMat(i));
+        m.castShadow = true; m.receiveShadow = true;
+        g.add(m);
         wake();
       };
       if (solid && b.mesh) {
         loader.load(`/api/assets/${b.mesh}`, (gltf) => {
-          // Replace the textureless (sometimes dark/metallic) exported material
-          // with a bright, fully lit per-body color so lighting reads clearly.
           const mat = bodyMat(i);
           gltf.scene.traverse((o) => {
             const mesh = o as THREE.Mesh;
-            if (mesh.isMesh) mesh.material = mat;
+            if (!mesh.isMesh) return;
+            // Exported GLBs have no normals -> compute them so lights actually
+            // shade the mesh (the isolated light test proved this is the fix).
+            if (mesh.geometry && !mesh.geometry.attributes.normal) mesh.geometry.computeVertexNormals();
+            mesh.material = mat;
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
           });
           g.add(gltf.scene);
           wake();
@@ -247,6 +262,16 @@ export function ArticulationViewer() {
           camera.far = d * 30;
         }
         camera.updateProjectionMatrix();
+        // Aim the shadow-casting key light at the scene center and size its
+        // (orthographic) shadow frustum to cover the whole scene.
+        const sr = Math.max(radius * 1.7, 5);
+        defDir.position.set(tx + sr * 0.7, sr * 1.5, tz + sr * 0.6);
+        defDir.target.position.set(tx, 0, tz);
+        scene.add(defDir.target);
+        const sc = defDir.shadow.camera as THREE.OrthographicCamera;
+        sc.left = -sr; sc.right = sr; sc.top = sr; sc.bottom = -sr;
+        sc.near = 0.5; sc.far = sr * 6;
+        sc.updateProjectionMatrix();
         // size the floor grid to the scene and place it under the motion (y=0 = ground)
         const span = Math.max(2, Math.ceil(radius * 3));
         scene.remove(grid);
