@@ -65,12 +65,6 @@ export function ArticulationViewer() {
     defaultLights.add(defDir);
     defaultLights.visible = usePlaybackStore.getState().defaultLights;
     scene.add(defaultLights);
-    // Reference floor grid with 1 m cells (divisions == size), lifted a few mm
-    // above y=0 so it doesn't z-fight with a task's real ground/court mesh.
-    const GRID_LIFT = 0.003;
-    const grid = new THREE.GridHelper(2, 2, 0x335, 0x223);
-    grid.position.y = GRID_LIFT;
-    scene.add(grid);
 
     let needsRender = true;
     let lastFrame = -1;
@@ -276,13 +270,6 @@ export function ArticulationViewer() {
         sc.left = -sr; sc.right = sr; sc.top = sr; sc.bottom = -sr;
         sc.near = 0.5; sc.far = sr * 6;
         sc.updateProjectionMatrix();
-        // size the floor grid to the scene; 1 m cells (divisions == span) and
-        // lifted a few mm above the ground so it doesn't z-fight the floor mesh.
-        const span = Math.max(2, Math.ceil(radius * 3));
-        scene.remove(grid);
-        const sized = new THREE.GridHelper(span, span, 0x335, 0x223);
-        sized.position.set(tx, GRID_LIFT, tz);
-        scene.add(sized);
       }
     }
 
