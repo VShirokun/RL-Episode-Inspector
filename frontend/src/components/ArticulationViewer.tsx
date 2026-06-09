@@ -116,17 +116,36 @@ export function ArticulationViewer() {
     const rootMat = new THREE.MeshStandardMaterial({ color: 0x8899aa, metalness: 0.2, roughness: 0.6 });
     const limbMat = new THREE.MeshStandardMaterial({ color: 0x6f86b8, metalness: 0.15, roughness: 0.75 });
 
+    // Proxy size scales with the scene extent so meshless bodies stay visible on
+    // a large scene (e.g. a tennis court spanning ~20 m) without being oversized
+    // on a small robot. Meshed bodies are unaffected (they use their real GLB).
+    let proxySize = 0.05;
+    if (loaded0 && bodies.length > 0) {
+      const lo = [Infinity, Infinity, Infinity];
+      const hi = [-Infinity, -Infinity, -Infinity];
+      for (const b of bodies) {
+        b.pos.forEach((col, ax) => {
+          const v = loaded0.columns[col]?.[0] as number;
+          if (Number.isFinite(v)) { lo[ax] = Math.min(lo[ax], v); hi[ax] = Math.max(hi[ax], v); }
+        });
+      }
+      if (Number.isFinite(lo[0])) {
+        const diag = Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]);
+        proxySize = Math.min(0.5, Math.max(0.05, diag * 0.03));
+      }
+    }
+
     // One group per body; child is a real mesh, a solid joint sphere, or a cube.
     const bodyGroups = bodies.map((b, i) => {
       const g = new THREE.Group();
       root.add(g);
       const addBox = () => {
-        g.add(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.05),
+        g.add(new THREE.Mesh(new THREE.BoxGeometry(proxySize, proxySize, proxySize),
           new THREE.MeshStandardMaterial({ color: i === 0 ? 0x8899aa : 0x4f9dff, metalness: 0.2, roughness: 0.6 })));
         wake();
       };
       const addJoint = () => {
-        g.add(new THREE.Mesh(new THREE.SphereGeometry(0.05, 16, 16), b.parent < 0 ? rootMat : jointMat));
+        g.add(new THREE.Mesh(new THREE.SphereGeometry(proxySize, 16, 16), b.parent < 0 ? rootMat : jointMat));
         wake();
       };
       if (solid && b.mesh) {
